@@ -22,6 +22,21 @@ class ProfileForm(forms.ModelForm):
 
 
 class DepositForm(forms.ModelForm):
+    CURRENCY_CHOICES = [
+        ('USD', '🇺🇸 USD — Dólar Estadounidense'),
+        ('EUR', '🇪🇺 EUR — Euro'),
+        ('GBP', '🇬🇧 GBP — Libra Esterlina'),
+        ('BTC', '₿  BTC — Bitcoin'),
+        ('ETH', 'Ξ  ETH — Ethereum'),
+        ('USDT', '₮  USDT — Tether'),
+        ('BNB', '🔶 BNB — Binance Coin'),
+        ('SOL', '◎  SOL — Solana'),
+        ('ADA', '₳  ADA — Cardano'),
+        ('XRP', '✕  XRP — Ripple'),
+        ('MATIC', '⬡  MATIC — Polygon'),
+        ('DOGE', 'Ð  DOGE — Dogecoin'),
+    ]
+
     class Meta:
         model = DepositRequest
         fields = ['amount', 'currency', 'payment_method', 'proof_of_payment', 'notes']
@@ -32,17 +47,19 @@ class DepositForm(forms.ModelForm):
                 'min': '100',
                 'step': '0.01',
             }),
-            'currency': forms.Select(attrs={'class': 'form-select form-select-lg'}),
+            'currency': forms.Select(
+                choices=CURRENCY_CHOICES,
+                attrs={'class': 'form-select form-select-lg'}
+            ),
             'payment_method': forms.Select(attrs={'class': 'form-select form-select-lg'}),
             'proof_of_payment': forms.FileInput(attrs={'class': 'form-control'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Notas adicionales...'}),
         }
-    
+
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')
         min_deposit = Decimal(str(settings.NOVA_CAPITAL['MIN_DEPOSIT']))
         max_deposit = Decimal(str(settings.NOVA_CAPITAL['MAX_DEPOSIT']))
-        
         if amount < min_deposit:
             raise forms.ValidationError(f'El depósito mínimo es ${min_deposit}')
         if amount > max_deposit:

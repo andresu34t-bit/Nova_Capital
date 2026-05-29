@@ -6,8 +6,9 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),
-    path('accounts/', include('accounts.urls')),
+    # allauth MUST come before accounts.urls so login/signup/etc. resolve correctly
     path('accounts/', include('allauth.urls')),
+    path('accounts/', include('accounts.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('trading/', include('trading.urls')),
     path('api/', include('trading.api_urls')),

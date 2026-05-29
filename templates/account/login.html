@@ -1,28 +1,245 @@
 {% extends 'base.html' %}
 {% load allauth account static %}
 {% block title %}Iniciar Sesión{% endblock %}
-
 {% block footer %}{% endblock %}
 
+{% block extra_css %}
+<style>
+/* ── Auth layout ─────────────────────────────────────────── */
+.auth-split { display:flex; min-height:100vh; }
+
+/* Left panel — illustration */
+.auth-left {
+  flex: 1;
+  background: linear-gradient(145deg, #050a18 0%, #0a1628 50%, #0d1f3c 100%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 3rem 2rem;
+  position: relative; overflow: hidden;
+}
+.auth-left::before {
+  content:'';
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(0,102,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,102,255,0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.auth-glow-1 {
+  position:absolute; top:-120px; left:-120px;
+  width:500px; height:500px; border-radius:50%;
+  background: radial-gradient(circle, rgba(0,102,255,0.18) 0%, transparent 70%);
+  pointer-events:none;
+}
+.auth-glow-2 {
+  position:absolute; bottom:-80px; right:-80px;
+  width:350px; height:350px; border-radius:50%;
+  background: radial-gradient(circle, rgba(0,212,255,0.12) 0%, transparent 70%);
+  pointer-events:none;
+}
+
+/* Animated orbit illustration */
+.orbit-wrap {
+  position: relative; width: 280px; height: 280px;
+  margin-bottom: 2.5rem; z-index:1;
+}
+.orbit-center {
+  position:absolute; top:50%; left:50%;
+  transform: translate(-50%,-50%);
+  width:90px; height:90px; border-radius:50%;
+  background: linear-gradient(135deg, #0066FF, #00D4FF);
+  box-shadow: 0 0 40px rgba(0,102,255,0.6), 0 0 80px rgba(0,102,255,0.2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:2.2rem;
+  animation: centerPulse 3s ease-in-out infinite;
+}
+@keyframes centerPulse {
+  0%,100% { box-shadow: 0 0 40px rgba(0,102,255,0.6), 0 0 80px rgba(0,102,255,0.2); }
+  50%      { box-shadow: 0 0 60px rgba(0,102,255,0.9), 0 0 120px rgba(0,102,255,0.35); }
+}
+.orbit-ring {
+  position:absolute; top:50%; left:50%;
+  border-radius:50%; border: 1px solid rgba(0,102,255,0.2);
+  transform: translate(-50%,-50%);
+}
+.orbit-ring-1 { width:140px; height:140px; animation: spin 8s linear infinite; }
+.orbit-ring-2 { width:200px; height:200px; animation: spin 14s linear infinite reverse; border-color: rgba(0,212,255,0.15); }
+.orbit-ring-3 { width:270px; height:270px; animation: spin 20s linear infinite; border-color: rgba(0,102,255,0.1); }
+@keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+.orbit-dot {
+  position:absolute; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.75rem; font-weight:700; color:#fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.od-btc { width:36px;height:36px; background:linear-gradient(135deg,#f7931a,#e8820a);
+  top:-18px; left:50%; margin-left:-18px; }
+.od-eth { width:30px;height:30px; background:linear-gradient(135deg,#627eea,#4a5fd4);
+  top:50%; right:-15px; margin-top:-15px; }
+.od-sol { width:28px;height:28px; background:linear-gradient(135deg,#9945ff,#14f195);
+  bottom:-14px; left:50%; margin-left:-14px; }
+.od-bnb { width:26px;height:26px; background:linear-gradient(135deg,#f3ba2f,#d4a017);
+  top:50%; left:-13px; margin-top:-13px; }
+
+.auth-left-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem; font-weight: 800;
+  color: #fff; text-align:center;
+  line-height:1.2; margin-bottom:0.75rem; z-index:1;
+}
+.auth-left-sub { color:#64748b; font-size:0.9rem; text-align:center; max-width:280px; z-index:1; }
+
+.auth-stats-row {
+  display:flex; gap:1.5rem; margin-top:2rem; z-index:1;
+}
+.auth-stat {
+  text-align:center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius:12px; padding:0.75rem 1.25rem;
+}
+.auth-stat-val { font-family:var(--font-display); font-size:1.2rem; font-weight:800; color:#fff; }
+.auth-stat-lbl { font-size:0.7rem; color:#475569; margin-top:2px; }
+
+/* Right panel — form */
+.auth-right {
+  width: 480px; min-width:480px;
+  background: var(--bg-dark);
+  display:flex; align-items:center; justify-content:center;
+  padding: 2rem;
+  border-left: 1px solid var(--border);
+}
+.auth-form-wrap { width:100%; max-width:400px; }
+
+.auth-form-logo { width:48px; height:48px; border-radius:12px; margin-bottom:1.5rem; }
+
+.auth-form-title { font-family:var(--font-display); font-size:1.6rem; font-weight:800; color:#fff; margin-bottom:0.25rem; }
+.auth-form-sub { color:#64748b; font-size:0.875rem; margin-bottom:2rem; }
+
+.nova-field { margin-bottom:1.25rem; }
+.nova-field label { display:block; font-size:0.8rem; font-weight:600; color:#94a3b8; margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.5px; }
+.nova-field .input-group { border-radius:10px; overflow:hidden; }
+.nova-field .input-group-text {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-right:none; color:#6b7280; padding:0 0.9rem;
+}
+.nova-field .form-control {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-left:none !important; color:#e2e8f0 !important;
+  padding: 0.7rem 0.9rem !important; font-size:0.9rem !important;
+}
+.nova-field .form-control:focus {
+  border-color: rgba(0,102,255,0.5) !important;
+  box-shadow: none !important;
+  background: rgba(0,102,255,0.04) !important;
+}
+.nova-field .form-control:focus ~ .input-group-text,
+.nova-field .input-group:focus-within .input-group-text {
+  border-color: rgba(0,102,255,0.5);
+}
+.nova-field .toggle-pwd {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-left:none; color:#6b7280; cursor:pointer;
+  padding:0 0.9rem; transition:color 0.2s;
+}
+.nova-field .toggle-pwd:hover { color:#e2e8f0; }
+
+.btn-auth {
+  width:100%; padding:0.8rem;
+  background: linear-gradient(135deg, #0066FF 0%, #0047cc 100%);
+  border:none; border-radius:12px;
+  color:#fff; font-size:1rem; font-weight:700;
+  letter-spacing:0.3px;
+  box-shadow: 0 4px 20px rgba(0,102,255,0.4);
+  transition: all 0.22s ease;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.btn-auth:hover {
+  background: linear-gradient(135deg, #3385ff 0%, #0066FF 100%);
+  box-shadow: 0 8px 32px rgba(0,102,255,0.55);
+  transform: translateY(-2px);
+}
+.btn-auth:active { transform: scale(0.98); }
+
+.auth-divider { display:flex; align-items:center; gap:1rem; margin:1.5rem 0; }
+.auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.07); }
+.auth-divider span { color:#374151; font-size:0.75rem; white-space:nowrap; }
+
+.auth-link-row { text-align:center; margin-top:1.5rem; font-size:0.875rem; color:#64748b; }
+.auth-link-row a { color:var(--primary); font-weight:600; text-decoration:none; }
+.auth-link-row a:hover { color:var(--primary-light); }
+
+.auth-badges { display:flex; gap:0.75rem; justify-content:center; margin-top:1.75rem; flex-wrap:wrap; }
+.auth-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius:20px; padding:0.3rem 0.75rem;
+  font-size:0.72rem; color:#475569;
+}
+
+@media (max-width:900px) {
+  .auth-left { display:none; }
+  .auth-right { width:100%; min-width:unset; border-left:none; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="auth-page">
-  <div class="auth-bg">
-    <div class="hero-grid"></div>
-    <div class="hero-glow"></div>
-  </div>
-  <div class="container d-flex align-items-center justify-content-center min-vh-100 py-5">
-    <div class="auth-card">
-      <!-- Logo -->
-      <div class="text-center mb-4">
-        <a href="{% url 'core:home' %}" class="text-decoration-none d-inline-block mb-3">
-          <img src="{% static 'img/logo_auth.png' %}" alt="Nova Capital Group" class="auth-logo-img">
-        </a>
-        <h4 class="text-white fw-bold mb-1">Bienvenido de vuelta</h4>
-        <p class="text-muted small">Inicia sesión en tu cuenta</p>
+<div class="auth-split">
+
+  <!-- Left: Illustration -->
+  <div class="auth-left">
+    <div class="auth-glow-1"></div>
+    <div class="auth-glow-2"></div>
+
+    <div class="orbit-wrap">
+      <div class="orbit-ring orbit-ring-1">
+        <div class="orbit-dot od-btc">₿</div>
+        <div class="orbit-dot od-eth">Ξ</div>
       </div>
+      <div class="orbit-ring orbit-ring-2">
+        <div class="orbit-dot od-sol" style="top:-14px;left:50%;margin-left:-14px">◎</div>
+        <div class="orbit-dot od-bnb" style="bottom:-13px;left:50%;margin-left:-13px">B</div>
+      </div>
+      <div class="orbit-ring orbit-ring-3"></div>
+      <div class="orbit-center">💎</div>
+    </div>
+
+    <div class="auth-left-title">Inversiones<br>Inteligentes</div>
+    <p class="auth-left-sub">Accede a criptomonedas, acciones y forex desde una sola plataforma.</p>
+
+    <div class="auth-stats-row">
+      <div class="auth-stat">
+        <div class="auth-stat-val">$2.4B+</div>
+        <div class="auth-stat-lbl">Volumen 24h</div>
+      </div>
+      <div class="auth-stat">
+        <div class="auth-stat-val">180K+</div>
+        <div class="auth-stat-lbl">Usuarios</div>
+      </div>
+      <div class="auth-stat">
+        <div class="auth-stat-val">350+</div>
+        <div class="auth-stat-lbl">Activos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Form -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      <a href="{% url 'core:home' %}">
+        <img src="{% static 'img/logo_auth.png' %}" alt="Nova Capital" class="auth-form-logo">
+      </a>
+      <div class="auth-form-title">Bienvenido de vuelta</div>
+      <div class="auth-form-sub">Inicia sesión en tu cuenta Nova Capital</div>
 
       {% if form.errors %}
-      <div class="alert alert-danger border-0 mb-3">
+      <div class="alert alert-danger border-0 mb-4" style="border-radius:10px">
         <i class="bi bi-exclamation-circle-fill me-2"></i>
         Credenciales incorrectas. Verifica tu email y contraseña.
       </div>
@@ -30,58 +247,67 @@
 
       <form method="post" action="{% url 'account_login' %}">
         {% csrf_token %}
-        <div class="mb-3">
-          <label class="form-label">Email</label>
+        <input type="hidden" name="next" value="{{ redirect_field_value }}">
+
+        <div class="nova-field">
+          <label>Email</label>
           <div class="input-group">
-            <span class="input-group-text nova-input-addon"><i class="bi bi-envelope"></i></span>
-            <input type="email" name="login" class="form-control nova-input"
-                   placeholder="tu@email.com" value="{{ form.login.value|default:'' }}"
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input type="email" name="login" class="form-control"
+                   placeholder="tu@email.com"
+                   value="{{ form.login.value|default:'' }}"
                    autocomplete="email" required autofocus>
           </div>
         </div>
-        <div class="mb-3">
-          <div class="d-flex justify-content-between mb-1">
-            <label class="form-label mb-0">Contraseña</label>
-            <a href="{% url 'account_reset_password' %}" class="text-muted small">¿Olvidaste tu contraseña?</a>
+
+        <div class="nova-field">
+          <div class="d-flex justify-content-between align-items-center mb-1" style="margin-bottom:0.4rem!important">
+            <label style="margin-bottom:0">Contraseña</label>
+            <a href="{% url 'account_reset_password' %}" style="font-size:0.78rem;color:#6b7280;text-decoration:none">¿Olvidaste tu contraseña?</a>
           </div>
           <div class="input-group">
-            <span class="input-group-text nova-input-addon"><i class="bi bi-lock"></i></span>
-            <input type="password" name="password" id="loginPassword" class="form-control nova-input"
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            <input type="password" name="password" id="loginPwd" class="form-control"
                    placeholder="••••••••" autocomplete="current-password" required>
-            <button type="button" class="input-group-text nova-input-addon" onclick="togglePwd('loginPassword', this)">
+            <button type="button" class="toggle-pwd" onclick="togglePwd('loginPwd',this)">
               <i class="bi bi-eye"></i>
             </button>
           </div>
         </div>
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="remember" id="rememberMe">
-            <label class="form-check-label text-muted small" for="rememberMe">Recordarme</label>
-          </div>
+
+        <div class="d-flex align-items-center mb-4">
+          <input class="form-check-input me-2" type="checkbox" name="remember" id="rememberMe" style="border-color:rgba(255,255,255,0.15)">
+          <label class="form-check-label" for="rememberMe" style="font-size:0.82rem;color:#64748b">Recordarme por 30 días</label>
         </div>
-        <input type="hidden" name="next" value="{{ redirect_field_value }}">
-        <div class="d-grid mb-3">
-          <button type="submit" class="btn btn-primary btn-lg fw-semibold">
-            <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
-          </button>
-        </div>
+
+        <button type="submit" class="btn-auth">
+          <i class="bi bi-box-arrow-in-right"></i>Iniciar Sesión
+        </button>
       </form>
 
-      <div class="text-center">
-        <p class="text-muted small mb-0">
-          ¿No tienes cuenta?
-          <a href="{% url 'account_signup' %}" class="text-primary fw-semibold">Regístrate gratis</a>
-        </p>
-      </div>
+      <div class="auth-divider"><span>¿Nuevo en Nova Capital?</span></div>
 
-      <!-- Security badges -->
-      <div class="auth-security-badges mt-4">
-        <span><i class="bi bi-shield-fill-check text-success"></i> SSL Seguro</span>
-        <span><i class="bi bi-lock-fill text-primary"></i> 2FA Disponible</span>
-        <span><i class="bi bi-eye-slash text-muted"></i> Privacidad</span>
+      <a href="{% url 'account_signup' %}" style="
+        display:flex; align-items:center; justify-content:center; gap:8px;
+        width:100%; padding:0.75rem;
+        background: rgba(255,255,255,0.04);
+        border: 1.5px solid rgba(255,255,255,0.1);
+        border-radius:12px; color:#e2e8f0;
+        font-weight:600; font-size:0.95rem;
+        text-decoration:none; transition:all 0.2s;
+      " onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.borderColor='rgba(255,255,255,0.2)'"
+         onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='rgba(255,255,255,0.1)'">
+        <i class="bi bi-person-plus"></i>Crear cuenta gratis
+      </a>
+
+      <div class="auth-badges">
+        <span class="auth-badge"><i class="bi bi-shield-fill-check text-success"></i> SSL 256-bit</span>
+        <span class="auth-badge"><i class="bi bi-lock-fill text-primary"></i> 2FA</span>
+        <span class="auth-badge"><i class="bi bi-eye-slash"></i> Privacidad</span>
       </div>
     </div>
   </div>
+
 </div>
 {% endblock %}
 
@@ -90,13 +316,8 @@
 function togglePwd(id, btn) {
   const input = document.getElementById(id);
   const icon = btn.querySelector('i');
-  if (input.type === 'password') {
-    input.type = 'text';
-    icon.className = 'bi bi-eye-slash';
-  } else {
-    input.type = 'password';
-    icon.className = 'bi bi-eye';
-  }
+  input.type = input.type === 'password' ? 'text' : 'password';
+  icon.className = input.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
 }
 </script>
 {% endblock %}
