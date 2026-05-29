@@ -778,6 +778,52 @@ body.nova-body {
   padding: 0.6rem;
 }
 
+/* ---- NAVBAR AUTH BUTTONS ---- */
+.btn-nav-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.45rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #e2e8f0;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  transition: all 0.2s ease;
+  letter-spacing: 0.2px;
+}
+.btn-nav-login:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.25);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.btn-nav-register {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.45rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary) 0%, #0052cc 100%);
+  border: 1px solid transparent;
+  box-shadow: 0 2px 12px rgba(0,102,255,0.35);
+  transition: all 0.2s ease;
+  letter-spacing: 0.2px;
+}
+.btn-nav-register:hover {
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+  box-shadow: 0 4px 20px rgba(0,102,255,0.5);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
 /* ---- BUTTONS ---- */
 .btn-primary {
   background: var(--primary) !important;

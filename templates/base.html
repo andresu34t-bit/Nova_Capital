@@ -176,8 +176,12 @@
                     </ul>
                 </div>
                 {% else %}
-                <a href="{% url 'account_login' %}" class="btn btn-outline-light btn-sm px-3">Iniciar Sesión</a>
-                <a href="{% url 'account_signup' %}" class="btn btn-primary btn-sm px-3">Registrarse</a>
+                <a href="{% url 'account_login' %}" class="btn-nav-login">
+                  <i class="bi bi-box-arrow-in-right me-1"></i>Iniciar Sesión
+                </a>
+                <a href="{% url 'account_signup' %}" class="btn-nav-register">
+                  <i class="bi bi-person-plus me-1"></i>Registrarse
+                </a>
                 {% endif %}
             </div>
         </div>
