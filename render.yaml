@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: nova-capital
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn nova_capital.wsgi:application"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nova-capital-db
+          property: connectionString
+      - key: EMAIL_BACKEND
+        value: "django.core.mail.backends.console.EmailBackend"
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+
+databases:
+  - name: nova-capital-db
+    databaseName: nova_capital
+    user: nova_capital_user
+    plan: free
