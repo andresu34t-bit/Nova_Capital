@@ -247,7 +247,7 @@
 
       <form method="post" action="{% url 'account_login' %}">
         {% csrf_token %}
-        <input type="hidden" name="next" value="{{ redirect_field_value }}">
+        <input type="hidden" name="next" value="{{ redirect_field_value|default:'/dashboard/' }}">
 
         <div class="nova-field">
           <label>Email</label>
