@@ -113,6 +113,14 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Cache — memoria local (suficiente para rate limiting en instancia única)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'nova-capital-cache',
+    }
+}
+
 AUTH_USER_MODEL = 'accounts.User'
 
 # Authentication
@@ -126,11 +134,12 @@ SITE_ID = 1
 # Allauth settings (django-allauth >= 65.x)
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'first_name', 'last_name', 'password1*', 'password2*']
-ACCOUNT_EMAIL_VERIFICATION = 'optional'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_LOGIN_REDIRECT_URL = '/dashboard/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/accounts/login/'

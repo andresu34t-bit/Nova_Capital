@@ -49,30 +49,34 @@ class RateLimitMiddleware:
     
     def __init__(self, get_response):
         self.get_response = get_response
-        # Sensitive endpoints and their limits (requests per minute)
         self.rate_limits = {
-            '/accounts/login/': (10, 60),       # 10 per minute
-            '/accounts/signup/': (5, 60),        # 5 per minute
-            '/accounts/password/reset/': (5, 60), # 5 per minute
-            '/api/': (60, 60),                   # 60 per minute for API
+            '/accounts/login/': (20, 60),
+            '/accounts/signup/': (10, 60),
+            '/accounts/password/reset/': (5, 60),
+            '/api/': (120, 60),
         }
     
     def __call__(self, request):
-        # Check rate limits for sensitive endpoints
-        for endpoint, (limit, window) in self.rate_limits.items():
-            if request.path.startswith(endpoint):
-                ip = self._get_client_ip(request)
-                cache_key = f'rate_limit:{ip}:{endpoint}'
-                
-                requests = cache.get(cache_key, 0)
-                if requests >= limit:
-                    logger.warning(f"Rate limit exceeded for IP {ip} on {endpoint}")
-                    if request.path.startswith('/api/'):
-                        return JsonResponse({'error': 'Too many requests'}, status=429)
-                    return HttpResponseForbidden('Too many requests. Please try again later.')
-                
-                cache.set(cache_key, requests + 1, window)
-                break
+        # Only apply rate limiting in production and skip for safe methods
+        if not settings.DEBUG and request.method == 'POST':
+            for endpoint, (limit, window) in self.rate_limits.items():
+                if request.path.startswith(endpoint):
+                    try:
+                        ip = self._get_client_ip(request)
+                        cache_key = f'rl:{ip}:{endpoint}'
+                        requests_count = cache.get(cache_key, 0)
+                        if requests_count >= limit:
+                            logger.warning(f"Rate limit exceeded for IP {ip} on {endpoint}")
+                            if request.path.startswith('/api/'):
+                                return JsonResponse({'error': 'Too many requests'}, status=429)
+                            # Return 429 instead of 403 so it's clear
+                            from django.http import HttpResponse
+                            return HttpResponse('Demasiadas solicitudes. Intenta en un momento.', status=429)
+                        cache.set(cache_key, requests_count + 1, window)
+                    except Exception:
+                        # If cache fails, don't block the request
+                        pass
+                    break
         
         return self.get_response(request)
     
