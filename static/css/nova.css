@@ -2446,3 +2446,173 @@ a:hover { color: var(--primary-light); }
    NEWS EMPTY STATE
    ════════════════════════════════════════════════════════════ */
 .news-empty-state { padding: 20px; }
+
+
+/* ════════════════════════════════════════════════════════════
+   MARKET TABS — Professional pill buttons
+   ════════════════════════════════════════════════════════════ */
+.market-tabs .nav-link {
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  color: #94a3b8;
+  border-radius: 10px !important;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 1.2rem;
+  transition: all 0.22s ease;
+  letter-spacing: 0.2px;
+}
+.market-tabs .nav-link:hover {
+  background: rgba(0,102,255,0.1);
+  border-color: rgba(0,102,255,0.3);
+  color: #e2e8f0;
+  transform: translateY(-1px);
+}
+.market-tabs .nav-link.active {
+  background: linear-gradient(135deg, #0066FF 0%, #0047cc 100%) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+  box-shadow: 0 4px 16px rgba(0,102,255,0.35);
+  transform: translateY(-1px);
+}
+
+/* ---- btn-info ---- */
+.btn-info {
+  background: linear-gradient(135deg, #0dcaf0 0%, #0aa8cc 100%) !important;
+  border: none !important;
+  color: #000 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(13,202,240,0.3) !important;
+}
+.btn-info:hover {
+  background: linear-gradient(135deg, #3dd5f3 0%, #0dcaf0 100%) !important;
+  box-shadow: 0 6px 20px rgba(13,202,240,0.45) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ---- Trade tabs (buy/sell) ---- */
+.trade-tabs .nav-link {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #6b7280;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0 !important;
+  transition: all 0.2s ease;
+  letter-spacing: 0.2px;
+}
+.trade-tabs .nav-link.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  background: rgba(0,102,255,0.06);
+}
+.trade-tabs .nav-link:hover:not(.active) {
+  color: #e2e8f0;
+  background: rgba(255,255,255,0.04);
+  transform: none;
+}
+
+/* ---- Sidebar verify banner button ---- */
+.sidebar-verify-banner .btn-warning {
+  border-radius: 6px !important;
+  font-size: 0.72rem !important;
+  padding: 0.2rem 0.6rem !important;
+}
+
+/* ---- Dashboard topbar buttons ---- */
+.dashboard-topbar .btn-success,
+.dashboard-topbar .btn-primary {
+  border-radius: 10px !important;
+  font-size: 0.82rem !important;
+  padding: 0.45rem 1rem !important;
+}
+
+/* ---- Filter buttons (transactions page) ---- */
+.nova-card-body .btn-sm.btn-outline-secondary,
+.nova-card-body .btn-sm.btn-primary,
+.nova-card-body .btn-sm.btn-success,
+.nova-card-body .btn-sm.btn-warning,
+.nova-card-body .btn-sm.btn-danger {
+  border-radius: 8px !important;
+  font-size: 0.78rem !important;
+  padding: 0.35rem 0.85rem !important;
+}
+
+/* ---- Percent buttons in trading panel ---- */
+#buyPanel .btn-outline-secondary,
+#sellPanel .btn-outline-secondary {
+  border-radius: 8px !important;
+  font-size: 0.75rem !important;
+  padding: 0.3rem 0 !important;
+  font-weight: 600;
+}
+#buyPanel .btn-outline-secondary:hover,
+#sellPanel .btn-outline-secondary:hover {
+  background: rgba(0,102,255,0.12) !important;
+  border-color: rgba(0,102,255,0.4) !important;
+  color: #60a5fa !important;
+}
+
+/* ---- Chart period buttons ---- */
+.nova-card-header .btn-outline-secondary {
+  border-radius: 8px !important;
+  font-size: 0.75rem !important;
+  padding: 0.3rem 0.65rem !important;
+}
+.nova-card-header .btn-outline-secondary.active {
+  background: linear-gradient(135deg, #0066FF, #0047cc) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+  box-shadow: 0 2px 10px rgba(0,102,255,0.3) !important;
+}
+
+/* ---- Watchlist trade button ---- */
+.wl-trade-btn {
+  background: linear-gradient(135deg, #0066FF 0%, #0047cc 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  box-shadow: 0 3px 12px rgba(0,102,255,0.3) !important;
+  font-weight: 600;
+  transition: all 0.22s ease !important;
+}
+.wl-trade-btn:hover {
+  box-shadow: 0 6px 20px rgba(0,102,255,0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ---- Profile edit button ---- */
+.nova-card .btn-outline-primary {
+  border-radius: 10px !important;
+}
+
+/* ---- Security page buttons ---- */
+.nova-card .btn-outline-danger {
+  border: 1.5px solid rgba(255,61,87,0.5) !important;
+  color: var(--danger) !important;
+  background: transparent !important;
+  border-radius: 10px !important;
+  font-weight: 600;
+}
+.nova-card .btn-outline-danger:hover {
+  background: linear-gradient(135deg, #ff3d57, #cc0022) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(255,61,87,0.35) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ---- Deposit/Withdraw submit buttons ---- */
+.d-grid .btn-success,
+.d-grid .btn-warning,
+.d-grid .btn-primary {
+  border-radius: 12px !important;
+  letter-spacing: 0.3px;
+}
+
+/* ---- pm-sub text in deposit ---- */
+.pm-sub { font-size: 0.68rem; color: #64748b; margin-top: 1px; }
+
+/* ---- Smooth hover on all .btn ---- */
+.btn { will-change: transform; }
