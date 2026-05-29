@@ -44,10 +44,43 @@ window.addEventListener('scroll', () => {
   if (navbar) {
     navbar.classList.toggle('scrolled', window.scrollY > 20);
   }
-});
+}, { passive: true });
+
+// ---- Ripple effect on buttons ----
+function addRipple(e) {
+  const btn = e.currentTarget;
+  const existing = btn.querySelector('.btn-ripple');
+  if (existing) existing.remove();
+
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height) * 2;
+  const x = e.clientX - rect.left - size / 2;
+  const y = e.clientY - rect.top - size / 2;
+
+  const ripple = document.createElement('span');
+  ripple.className = 'btn-ripple';
+  ripple.style.cssText = `
+    position:absolute; border-radius:50%; pointer-events:none;
+    width:${size}px; height:${size}px;
+    left:${x}px; top:${y}px;
+    background:rgba(255,255,255,0.18);
+    transform:scale(0); animation:rippleAnim 0.55s ease-out forwards;
+  `;
+  btn.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 600);
+}
+
+// Inject ripple keyframes once
+const rippleStyle = document.createElement('style');
+rippleStyle.textContent = `
+  @keyframes rippleAnim { to { transform: scale(1); opacity: 0; } }
+  .btn { overflow: hidden; }
+`;
+document.head.appendChild(rippleStyle);
 
 // ---- Auto-dismiss alerts ----
 document.addEventListener('DOMContentLoaded', () => {
+  // Dismiss alerts
   document.querySelectorAll('.alert.fade.show').forEach(alert => {
     setTimeout(() => {
       const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
@@ -60,12 +93,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize tooltips
   document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
-    new bootstrap.Tooltip(el);
+    new bootstrap.Tooltip(el, { trigger: 'hover' });
   });
 
   // Price flash animation on update
   setupPriceFlash();
+
+  // Add ripple to all buttons
+  document.querySelectorAll('.btn:not(.btn-icon):not(.livechat-quick-btn)').forEach(btn => {
+    btn.addEventListener('click', addRipple);
+  });
+
+  // Intersection observer for card animations
+  setupCardAnimations();
 });
+
+// ---- Card entrance animations via IntersectionObserver ----
+function setupCardAnimations() {
+  const cards = document.querySelectorAll('.nova-card, .stat-card, .feat-card, .acct-card, .wl-card, .news-card-premium');
+  if (!cards.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        entry.target.style.animationPlayState = 'running';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  cards.forEach(card => {
+    card.style.animationPlayState = 'paused';
+    observer.observe(card);
+  });
+}
 
 // ---- Counter animation ----
 function observeCounters() {
