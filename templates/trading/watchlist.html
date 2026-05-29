@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static asset_tags %}
+{% block title %}Mi Watchlist{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-5 mt-3">
+
+  <!-- Header with live market pulse -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h3 class="text-white fw-bold mb-0"><i class="bi bi-star-fill text-warning me-2"></i>Mi Watchlist</h3>
+      <p class="text-muted small mb-0">Activos que estás siguiendo · Actualización en tiempo real</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      <span class="badge-dot me-1"></span><span class="text-muted small me-3">En vivo</span>
+      <a href="{% url 'trading:market' %}" class="btn btn-primary btn-sm px-3">
+        <i class="bi bi-plus-lg me-1"></i>Añadir Activos
+      </a>
+    </div>
+  </div>
+
+  {% if items %}
+  <!-- Market summary bar -->
+  <div class="wl-summary-bar mb-4">
+    <div class="wl-summary-item">
+      <span class="wl-sum-label">Activos seguidos</span>
+      <span class="wl-sum-val">{{ items|length }}</span>
+    </div>
+    <div class="wl-summary-sep"></div>
+    <div class="wl-summary-item">
+      <span class="wl-sum-label">En alza hoy</span>
+      <span class="wl-sum-val text-success">{% for i in items %}{% if i.asset.is_positive %}+{% endif %}{% endfor %}</span>
+    </div>
+    <div class="wl-summary-sep"></div>
+    <div class="wl-summary-item">
+      <span class="wl-sum-label">Mejor rendimiento</span>
+      <span class="wl-sum-val text-success">
+        {% for i in items %}{% if forloop.first %}{{ i.asset.symbol }} +{{ i.asset.price_change_percent_24h|floatformat:2 }}%{% endif %}{% endfor %}
+      </span>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    {% for item in items %}
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+      <div class="wl-card {% if item.asset.is_positive %}wl-card-up{% else %}wl-card-down{% endif %}">
+        <!-- Top accent -->
+        <div class="wl-card-accent {% if item.asset.is_positive %}wl-accent-green{% else %}wl-accent-red{% endif %}"></div>
+
+        <div class="wl-card-header">
+          <div class="d-flex align-items-center gap-2">
+            {% asset_icon item.asset.symbol item.asset.asset_type 38 %}
+            <div>
+              <div class="fw-bold text-white">{{ item.asset.symbol }}</div>
+              <div class="text-muted" style="font-size:11px">{{ item.asset.name|truncatechars:16 }}</div>
+            </div>
+          </div>
+          <form method="post" action="{% url 'trading:toggle_watchlist' %}">
+            {% csrf_token %}
+            <input type="hidden" name="symbol" value="{{ item.asset.symbol }}">
+            <button type="submit" class="btn btn-icon text-warning wl-remove-btn" title="Quitar">
+              <i class="bi bi-star-fill"></i>
+            </button>
+          </form>
+        </div>
+
+        <!-- Sparkline mini chart -->
+        <div class="wl-sparkline-wrap">
+          <canvas class="wl-sparkline" id="spark_{{ item.asset.symbol }}" height="50"
+                  data-positive="{{ item.asset.is_positive|yesno:'true,false' }}"
+                  data-price="{{ item.asset.current_price }}"></canvas>
+        </div>
+
+        <!-- Price info -->
+        <div class="wl-price-row">
+          <div>
+            <div class="wl-price" data-symbol="{{ item.asset.symbol }}">${{ item.asset.current_price|floatformat:2 }}</div>
+            <div class="wl-change {% if item.asset.is_positive %}text-success{% else %}text-danger{% endif %}" data-change="{{ item.asset.symbol }}">
+              <i class="bi bi-caret-{% if item.asset.is_positive %}up{% else %}down{% endif %}-fill"></i>
+              {% if item.asset.is_positive %}+{% endif %}{{ item.asset.price_change_percent_24h|floatformat:2 }}%
+            </div>
+          </div>
+          <div class="text-end">
+            <div class="text-muted" style="font-size:10px">Vol 24h</div>
+            <div class="text-white small">${{ item.asset.volume_24h|floatformat:0 }}</div>
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="wl-stats-row">
+          <div class="wl-stat">
+            <span class="wl-stat-lbl">Máx</span>
+            <span class="wl-stat-val text-success">${{ item.asset.high_24h|floatformat:2 }}</span>
+          </div>
+          <div class="wl-stat">
+            <span class="wl-stat-lbl">Mín</span>
+            <span class="wl-stat-val text-danger">${{ item.asset.low_24h|floatformat:2 }}</span>
+          </div>
+          <div class="wl-stat">
+            <span class="wl-stat-lbl">Tipo</span>
+            <span class="wl-stat-val">{{ item.asset.get_asset_type_display }}</span>
+          </div>
+        </div>
+
+        <a href="{% url 'trading:asset_detail' item.asset.symbol %}" class="btn btn-primary btn-sm w-100 wl-trade-btn">
+          <i class="bi bi-graph-up me-1"></i>Operar {{ item.asset.symbol }}
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <!-- Empty state premium -->
+  <div class="wl-empty-state">
+    <div class="wl-empty-visual">
+      <svg viewBox="0 0 200 120" class="wl-empty-svg">
+        <defs>
+          <linearGradient id="wlEmptyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(255,193,7,0.3)"/>
+            <stop offset="100%" stop-color="rgba(255,193,7,0)"/>
+          </linearGradient>
+        </defs>
+        <line x1="0" y1="100" x2="200" y2="100" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <path d="M0,90 Q30,75 60,65 Q90,55 120,45 Q150,35 200,20" fill="none" stroke="rgba(255,193,7,0.3)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <path d="M0,90 Q30,75 60,65 Q90,55 120,45 Q150,35 200,20 L200,100 L0,100 Z" fill="url(#wlEmptyGrad)"/>
+        <!-- Stars -->
+        <text x="40" y="40" font-size="20" fill="rgba(255,193,7,0.4)" class="wl-star-float">★</text>
+        <text x="100" y="25" font-size="14" fill="rgba(255,193,7,0.3)" class="wl-star-float" style="animation-delay:.5s">★</text>
+        <text x="160" y="35" font-size="18" fill="rgba(255,193,7,0.4)" class="wl-star-float" style="animation-delay:1s">★</text>
+      </svg>
+    </div>
+    <h5 class="text-white fw-bold mb-2">Tu watchlist está vacía</h5>
+    <p class="text-muted mb-4">Añade activos desde el mercado para seguir sus precios en tiempo real</p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <a href="{% url 'trading:market' %}" class="btn btn-primary px-4">
+        <i class="bi bi-search me-2"></i>Explorar Mercado
+      </a>
+      <a href="{% url 'trading:news' %}" class="btn btn-outline-secondary px-4">
+        <i class="bi bi-newspaper me-2"></i>Ver Noticias
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Draw sparklines
+document.querySelectorAll('.wl-sparkline').forEach(canvas => {
+  const isUp = canvas.dataset.positive === 'true';
+  const basePrice = parseFloat(canvas.dataset.price) || 100;
+  const pts = [];
+  let p = basePrice * (isUp ? 0.92 : 1.08);
+  for (let i = 0; i < 20; i++) {
+    p += (Math.random() - (isUp ? 0.4 : 0.6)) * basePrice * 0.015;
+    pts.push(p);
+  }
+  new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: pts.map((_,i) => i),
+      datasets: [{
+        data: pts,
+        borderColor: isUp ? '#22c55e' : '#ef4444',
+        backgroundColor: isUp ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
+        borderWidth: 1.5, fill: true, tension: 0.4, pointRadius: 0
+      }]
+    },
+    options: {
+      responsive: true, animation: false,
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: { x: { display: false }, y: { display: false } }
+    }
+  });
+});
+
+// Live price updates
+setInterval(() => {
+  fetch('/api/prices/?type=crypto').then(r => r.json()).then(data => {
+    if (!data.success) return;
+    Object.entries(data.prices).forEach(([sym, info]) => {
+      document.querySelectorAll(`[data-symbol="${sym}"]`).forEach(el => {
+        if (el.classList.contains('wl-price'))
+          el.textContent = '$' + info.price.toLocaleString('en', {maximumFractionDigits: info.price < 1 ? 6 : 2});
+      });
+      document.querySelectorAll(`[data-change="${sym}"]`).forEach(el => {
+        const sign = info.change_24h >= 0 ? '+' : '';
+        el.innerHTML = `<i class="bi bi-caret-${info.change_24h >= 0 ? 'up' : 'down'}-fill"></i> ${sign}${info.change_24h.toFixed(2)}%`;
+        el.className = `wl-change ${info.change_24h >= 0 ? 'text-success' : 'text-danger'}`;
+      });
+    });
+  }).catch(() => {});
+}, 30000);
+</script>
+{% endblock %}

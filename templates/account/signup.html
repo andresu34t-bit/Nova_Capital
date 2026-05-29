@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load allauth account static %}
+{% block title %}Crear Cuenta{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-bg">
+    <div class="hero-grid"></div>
+    <div class="hero-glow"></div>
+  </div>
+  <div class="container d-flex align-items-center justify-content-center min-vh-100 py-5">
+    <div class="auth-card" style="max-width:480px">
+      <div class="text-center mb-4">
+        <a href="{% url 'core:home' %}" class="text-decoration-none d-inline-block mb-3">
+          <img src="{% static 'img/logo_auth.png' %}" alt="Nova Capital Group" class="auth-logo-img">
+        </a>
+        <h4 class="text-white fw-bold mb-1">Crea tu cuenta</h4>
+        <p class="text-muted small">Únete a más de 180,000 inversores</p>
+      </div>
+
+      {% if form.errors %}
+      <div class="alert alert-danger border-0 mb-3">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        Por favor corrige los errores indicados.
+      </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'account_signup' %}">
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="first_name" class="form-control nova-input"
+                   placeholder="Juan" value="{{ form.first_name.value|default:'' }}">
+          </div>
+          <div class="col-6">
+            <label class="form-label">Apellido</label>
+            <input type="text" name="last_name" class="form-control nova-input"
+                   placeholder="García" value="{{ form.last_name.value|default:'' }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Nombre de usuario</label>
+            <div class="input-group">
+              <span class="input-group-text nova-input-addon"><i class="bi bi-person"></i></span>
+              <input type="text" name="username" class="form-control nova-input"
+                     placeholder="juangarcia" value="{{ form.username.value|default:'' }}" required>
+            </div>
+            {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Email</label>
+            <div class="input-group">
+              <span class="input-group-text nova-input-addon"><i class="bi bi-envelope"></i></span>
+              <input type="email" name="email" class="form-control nova-input"
+                     placeholder="tu@email.com" value="{{ form.email.value|default:'' }}" required>
+            </div>
+            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Contraseña</label>
+            <div class="input-group">
+              <span class="input-group-text nova-input-addon"><i class="bi bi-lock"></i></span>
+              <input type="password" name="password1" id="pwd1" class="form-control nova-input"
+                     placeholder="Mínimo 8 caracteres" required>
+              <button type="button" class="input-group-text nova-input-addon" onclick="togglePwd('pwd1',this)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            {% if form.password1.errors %}<div class="text-danger small mt-1">{{ form.password1.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Confirmar Contraseña</label>
+            <div class="input-group">
+              <span class="input-group-text nova-input-addon"><i class="bi bi-lock-fill"></i></span>
+              <input type="password" name="password2" id="pwd2" class="form-control nova-input"
+                     placeholder="Repite tu contraseña" required>
+              <button type="button" class="input-group-text nova-input-addon" onclick="togglePwd('pwd2',this)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            {% if form.password2.errors %}<div class="text-danger small mt-1">{{ form.password2.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-12">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="terms" required>
+              <label class="form-check-label text-muted small" for="terms">
+                Acepto los <a href="#" class="text-primary">Términos de Uso</a> y la
+                <a href="#" class="text-primary">Política de Privacidad</a>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-grid mt-4 mb-3">
+          <button type="submit" class="btn btn-primary btn-lg fw-semibold">
+            <i class="bi bi-person-plus me-2"></i>Crear Cuenta Gratis
+          </button>
+        </div>
+      </form>
+
+      <div class="text-center">
+        <p class="text-muted small mb-0">
+          ¿Ya tienes cuenta?
+          <a href="{% url 'account_login' %}" class="text-primary fw-semibold">Iniciar Sesión</a>
+        </p>
+      </div>
+
+      <div class="auth-security-badges mt-4">
+        <span><i class="bi bi-shield-fill-check text-success"></i> Cuenta Segura</span>
+        <span><i class="bi bi-envelope-check text-primary"></i> Verificación Email</span>
+        <span><i class="bi bi-gift text-warning"></i> Bono Bienvenida</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePwd(id, btn) {
+  const input = document.getElementById(id);
+  const icon = btn.querySelector('i');
+  input.type = input.type === 'password' ? 'text' : 'password';
+  icon.className = input.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+}
+// Password strength indicator
+document.getElementById('pwd1')?.addEventListener('input', function() {
+  const val = this.value;
+  let strength = 0;
+  if (val.length >= 8) strength++;
+  if (/[A-Z]/.test(val)) strength++;
+  if (/[0-9]/.test(val)) strength++;
+  if (/[^A-Za-z0-9]/.test(val)) strength++;
+  // Could add a visual indicator here
+});
+</script>
+{% endblock %}

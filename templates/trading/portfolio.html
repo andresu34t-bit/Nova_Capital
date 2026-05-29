@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load asset_tags %}
+{% block title %}Mi Portafolio{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-5 mt-3">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h3 class="text-white fw-bold mb-0">Mi Portafolio</h3>
+      <p class="text-muted small mb-0">Resumen de tus inversiones activas</p>
+    </div>
+    <a href="{% url 'trading:market' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-lg me-1"></i>Comprar Activos
+    </a>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:linear-gradient(135deg,#0066ff20,#0066ff10)">
+          <i class="bi bi-wallet2 text-primary"></i>
+        </div>
+        <div class="stat-card-body">
+          <div class="stat-card-label">Saldo USD</div>
+          <div class="stat-card-value">${{ usd_balance|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:linear-gradient(135deg,#28a74520,#28a74510)">
+          <i class="bi bi-graph-up text-success"></i>
+        </div>
+        <div class="stat-card-body">
+          <div class="stat-card-label">Valor Actual</div>
+          <div class="stat-card-value">${{ total_current|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:linear-gradient(135deg,#6c757d20,#6c757d10)">
+          <i class="bi bi-cash-stack text-secondary"></i>
+        </div>
+        <div class="stat-card-body">
+          <div class="stat-card-label">Total Invertido</div>
+          <div class="stat-card-value">${{ total_invested|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:{% if total_pnl >= 0 %}linear-gradient(135deg,#28a74520,#28a74510){% else %}linear-gradient(135deg,#dc354520,#dc354510){% endif %}">
+          <i class="bi bi-{% if total_pnl >= 0 %}trending-up text-success{% else %}trending-down text-danger{% endif %}"></i>
+        </div>
+        <div class="stat-card-body">
+          <div class="stat-card-label">P&L Total</div>
+          <div class="stat-card-value {% if total_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+            {% if total_pnl >= 0 %}+{% endif %}${{ total_pnl|floatformat:2 }}
+          </div>
+          <div class="stat-card-sub {% if total_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+            {% if total_pnl >= 0 %}+{% endif %}{{ total_pnl_percent|floatformat:2 }}%
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Holdings table -->
+  <div class="nova-card">
+    <div class="nova-card-header">
+      <h6 class="text-white fw-semibold mb-0">Posiciones Abiertas</h6>
+      <span class="text-muted small">{{ portfolio_items|length }} activos</span>
+    </div>
+    <div class="nova-card-body p-0">
+      <div class="table-responsive">
+        <table class="table nova-table mb-0">
+          <thead>
+            <tr>
+              <th>Activo</th><th>Cantidad</th><th>Precio Promedio</th>
+              <th>Precio Actual</th><th>Valor Actual</th><th>P&L</th><th>P&L %</th><th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in portfolio_items %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  {% asset_icon item.asset.symbol item.asset.asset_type 36 %}
+                  <div>
+                    <div class="fw-semibold text-white">{{ item.asset.symbol }}</div>
+                    <div class="text-muted small">{{ item.asset.name }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="text-white">{{ item.quantity|floatformat:6 }}</td>
+              <td class="text-muted">${{ item.average_buy_price|floatformat:2 }}</td>
+              <td class="text-white asset-price" data-symbol="{{ item.asset.symbol }}">${{ item.asset.current_price|floatformat:2 }}</td>
+              <td class="text-white fw-semibold">${{ item.current_value|floatformat:2 }}</td>
+              <td class="fw-semibold {% if item.profit_loss >= 0 %}text-success{% else %}text-danger{% endif %}">
+                {% if item.profit_loss >= 0 %}+{% endif %}${{ item.profit_loss|floatformat:2 }}
+              </td>
+              <td class="{% if item.profit_loss_percent >= 0 %}text-success{% else %}text-danger{% endif %}">
+                {% if item.profit_loss_percent >= 0 %}+{% endif %}{{ item.profit_loss_percent|floatformat:2 }}%
+              </td>
+              <td>
+                <a href="{% url 'trading:asset_detail' item.asset.symbol %}" class="btn btn-sm btn-primary">Trade</a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-5">
+                <i class="bi bi-pie-chart fs-1 text-muted opacity-50 d-block mb-2"></i>
+                <p class="text-muted">No tienes posiciones abiertas</p>
+                <a href="{% url 'trading:market' %}" class="btn btn-primary btn-sm">Ir al Mercado</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+setInterval(() => {
+  fetch('/api/prices/?type=crypto').then(r => r.json()).then(data => {
+    if (!data.success) return;
+    Object.entries(data.prices).forEach(([sym, info]) => {
+      document.querySelectorAll(`.asset-price[data-symbol="${sym}"]`).forEach(el => {
+        el.textContent = '$' + info.price.toLocaleString('en', {maximumFractionDigits:2});
+      });
+    });
+  }).catch(() => {});
+}, 30000);
+</script>
+{% endblock %}

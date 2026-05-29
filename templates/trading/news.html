@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load asset_tags %}
+{% block title %}Noticias Financieras{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-5 mt-3">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h3 class="text-white fw-bold mb-0">Noticias del Mercado</h3>
+      <p class="text-muted small mb-0">Mantente informado con las últimas noticias financieras</p>
+    </div>
+  </div>
+
+  <!-- Category filters -->
+  <div class="d-flex gap-2 flex-wrap mb-4">
+    <a href="?" class="btn btn-sm {% if not category %}btn-primary{% else %}btn-outline-secondary{% endif %}">Todas</a>
+    {% for cat_key, cat_name in categories %}
+    <a href="?category={{ cat_key }}" class="btn btn-sm {% if category == cat_key %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+      {{ cat_name }}
+    </a>
+    {% endfor %}
+  </div>
+
+  <div class="row g-4">
+    {% for article in articles %}
+    <div class="col-md-6 col-lg-4">
+      <div class="news-card-premium h-100">
+        <div class="news-card-bar {% if article.category == 'crypto' %}bar-blue{% elif article.category == 'stocks' %}bar-green{% elif article.category == 'forex' %}bar-cyan{% else %}bar-blue{% endif %}"></div>
+        <div class="news-card-visual">
+          {% if article.image_url %}
+          <div class="news-img-bg" style="background-image:url('{{ article.image_url }}')"></div>
+          {% else %}
+          <div class="news-img-bg news-img-generated">
+            <svg viewBox="0 0 200 100" class="news-gen-svg" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="ng{{ forloop.counter }}" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="{% if article.category == 'crypto' %}rgba(0,102,255,0.25){% elif article.category == 'stocks' %}rgba(34,197,94,0.25){% else %}rgba(0,212,255,0.25){% endif %}"/>
+                  <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+                </linearGradient>
+              </defs>
+              <!-- Grid -->
+              <line x1="0" y1="75" x2="200" y2="75" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+              <line x1="0" y1="50" x2="200" y2="50" stroke="rgba(255,255,255,0.04)" stroke-width="0.5"/>
+              <line x1="0" y1="25" x2="200" y2="25" stroke="rgba(255,255,255,0.04)" stroke-width="0.5"/>
+              <!-- Area -->
+              <path d="M0,80 Q25,65 50,55 Q75,45 100,{% if forloop.counter|divisibleby:2 %}35{% else %}40{% endif %} Q125,{% if forloop.counter|divisibleby:3 %}28{% else %}32{% endif %} 150,22 Q175,15 200,10 L200,100 L0,100 Z" fill="url(#ng{{ forloop.counter }})"/>
+              <!-- Line -->
+              <path d="M0,80 Q25,65 50,55 Q75,45 100,{% if forloop.counter|divisibleby:2 %}35{% else %}40{% endif %} Q125,{% if forloop.counter|divisibleby:3 %}28{% else %}32{% endif %} 150,22 Q175,15 200,10"
+                    fill="none"
+                    stroke="{% if article.category == 'crypto' %}rgba(0,102,255,0.7){% elif article.category == 'stocks' %}rgba(34,197,94,0.7){% else %}rgba(0,212,255,0.7){% endif %}"
+                    stroke-width="2"/>
+              <!-- Candles -->
+              {% if article.category == 'crypto' or article.category == 'stocks' %}
+              <rect x="20" y="60" width="8" height="20" fill="rgba(239,68,68,0.4)" rx="1"/>
+              <rect x="35" y="50" width="8" height="25" fill="rgba(34,197,94,0.5)" rx="1"/>
+              <rect x="50" y="45" width="8" height="22" fill="rgba(34,197,94,0.5)" rx="1"/>
+              <rect x="65" y="38" width="8" height="28" fill="rgba(239,68,68,0.4)" rx="1"/>
+              <rect x="80" y="30" width="8" height="32" fill="rgba(34,197,94,0.6)" rx="1"/>
+              {% endif %}
+              <!-- Dot at end -->
+              <circle cx="200" cy="10" r="3" fill="{% if article.category == 'crypto' %}#0066ff{% elif article.category == 'stocks' %}#22c55e{% else %}#00d4ff{% endif %}" opacity="0.8"/>
+            </svg>
+          </div>
+          {% endif %}
+          <div class="news-overlay-badge">{{ article.get_category_display }}</div>
+        </div>
+        <div class="news-card-body-premium">
+          <div class="news-meta-row">
+            <span class="news-source-tag"><i class="bi bi-broadcast me-1"></i>{{ article.source }}</span>
+            <span class="news-time-tag"><i class="bi bi-clock me-1"></i>{{ article.published_at|timesince }}</span>
+          </div>
+          <h6 class="news-title-premium">{{ article.title|truncatechars:80 }}</h6>
+          <p class="news-summary-premium">{{ article.summary|truncatechars:130 }}</p>
+          <div class="news-card-footer-row">
+            <div class="news-sentiment positive">
+              <i class="bi bi-graph-up-arrow me-1"></i>Análisis
+            </div>
+            {% if article.source_url %}
+            <a href="{{ article.source_url }}" target="_blank" rel="noopener noreferrer" class="news-read-btn">
+              Leer <i class="bi bi-arrow-right"></i>
+            </a>
+            {% else %}
+            <span class="news-read-btn" style="opacity:.4">Fuente interna</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+      <div class="news-empty-state">
+        <svg viewBox="0 0 160 100" width="160" height="100" class="mb-3">
+          <defs><linearGradient id="emptyNewsGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(0,102,255,0.2)"/><stop offset="100%" stop-color="rgba(0,102,255,0)"/></linearGradient></defs>
+          <rect x="10" y="15" width="140" height="75" rx="8" fill="rgba(15,23,42,0.8)" stroke="rgba(0,102,255,0.2)" stroke-width="1"/>
+          <line x1="25" y1="35" x2="135" y2="35" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+          <line x1="25" y1="50" x2="110" y2="50" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+          <line x1="25" y1="65" x2="120" y2="65" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+          <rect x="25" y="25" width="30" height="6" rx="3" fill="rgba(0,102,255,0.3)"/>
+          <path d="M80,70 Q95,55 110,45 Q125,35 140,25" fill="none" stroke="rgba(0,102,255,0.4)" stroke-width="1.5" stroke-dasharray="4 2"/>
+        </svg>
+        <p class="text-muted mb-3">No hay noticias disponibles en este momento.</p>
+        <p class="text-muted small">Las noticias se actualizan automáticamente desde fuentes financieras.</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

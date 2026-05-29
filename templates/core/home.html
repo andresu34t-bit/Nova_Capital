@@ -1,0 +1,807 @@
+{% extends 'base.html' %}
+{% load static asset_tags %}
+
+{% block title %}Inicio - Inversiones Inteligentes{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-bg">
+        <div class="hero-grid"></div>
+        <div class="hero-glow"></div>
+    </div>
+    <div class="container-fluid px-4 px-lg-5">
+        <div class="row align-items-center min-vh-100 py-5">
+            <div class="col-lg-6 hero-content">
+                <div class="hero-badge mb-4">
+                    <span class="badge-dot"></span>
+                    <span>Plataforma activa · Mercados en tiempo real</span>
+                </div>
+                <div class="mb-4">
+                    <img src="{% static 'img/logo.png' %}" alt="Nova Capital Group" class="hero-logo-img">
+                </div>
+                <h1 class="hero-title">
+                    Invierte en el<br>
+                    <span class="gradient-text">Futuro Digital</span><br>
+                    con Confianza
+                </h1>
+                <p class="hero-subtitle">
+                    Accede a criptomonedas, acciones y forex desde una sola plataforma. 
+                    Tecnología institucional al alcance de todos.
+                </p>
+                <div class="hero-stats d-flex gap-4 mb-5">
+                    <div class="stat-item">
+                        <div class="stat-value">$2.4B+</div>
+                        <div class="stat-label">Volumen 24h</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-value">180K+</div>
+                        <div class="stat-label">Usuarios</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-value">350+</div>
+                        <div class="stat-label">Activos</div>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 flex-wrap">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard:index' %}" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-speedometer2 me-2"></i>Mi Dashboard
+                    </a>
+                    <a href="{% url 'trading:market' %}" class="btn btn-outline-light btn-lg px-4">
+                        Ir al Mercado <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg px-5">
+                        Comenzar Gratis <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                    <a href="{% url 'account_login' %}" class="btn btn-outline-light btn-lg px-4">
+                        Iniciar Sesión
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="hero-trust mt-4">
+                    <i class="bi bi-shield-fill-check text-success me-2"></i>
+                    <span class="text-muted small">Regulado · SSL 256-bit · 2FA · Fondos asegurados</span>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="hero-chart-card">
+                    <div class="chart-card-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" width="28" height="28" alt="BTC" class="rounded-circle">
+                            <div>
+                                <div class="fw-semibold text-white">Bitcoin / USD</div>
+                                <div class="text-muted small">BTC · Crypto</div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-white fs-5" id="heroBtcPrice">$--,---</div>
+                            <div class="text-success small" id="heroBtcChange">+0.00%</div>
+                        </div>
+                    </div>
+                    <canvas id="heroChart" height="180"></canvas>
+                    <div class="chart-card-footer">
+                        <div class="d-flex justify-content-between text-muted small">
+                            <span>Vol 24h: <span class="text-white" id="heroBtcVol">--</span></span>
+                            <span>Cap: <span class="text-white" id="heroBtcCap">--</span></span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Floating price cards -->
+                <div class="floating-card floating-card-1" id="floatEth">
+                    <img src="https://assets.coingecko.com/coins/images/279/small/ethereum.png" width="24" height="24" alt="ETH">
+                    <div>
+                        <div class="fw-semibold text-white small">ETH</div>
+                        <div class="text-success small" id="floatEthPrice">$--</div>
+                    </div>
+                    <span class="badge bg-success-subtle text-success" id="floatEthChange">+0%</span>
+                </div>
+                <div class="floating-card floating-card-2" id="floatSol">
+                    <img src="https://assets.coingecko.com/coins/images/4128/small/solana.png" width="24" height="24" alt="SOL">
+                    <div>
+                        <div class="fw-semibold text-white small">SOL</div>
+                        <div class="text-success small" id="floatSolPrice">$--</div>
+                    </div>
+                    <span class="badge bg-success-subtle text-success" id="floatSolChange">+0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Live Ticker -->
+<div class="ticker-wrapper">
+    <div class="ticker-track" id="tickerTrack">
+        {% for asset in featured_assets %}
+        <div class="ticker-item">
+            <span class="ticker-symbol">{{ asset.symbol }}</span>
+            <span class="ticker-price" data-symbol="{{ asset.symbol }}">${{ asset.current_price|floatformat:2 }}</span>
+            <span class="ticker-change {% if asset.is_positive %}positive{% else %}negative{% endif %}" data-change="{{ asset.symbol }}">
+                {% if asset.is_positive %}+{% endif %}{{ asset.price_change_percent_24h|floatformat:2 }}%
+            </span>
+        </div>
+        {% endfor %}
+        <!-- Duplicate for seamless loop -->
+        {% for asset in featured_assets %}
+        <div class="ticker-item">
+            <span class="ticker-symbol">{{ asset.symbol }}</span>
+            <span class="ticker-price" data-symbol="{{ asset.symbol }}">${{ asset.current_price|floatformat:2 }}</span>
+            <span class="ticker-change {% if asset.is_positive %}positive{% else %}negative{% endif %}">
+                {% if asset.is_positive %}+{% endif %}{{ asset.price_change_percent_24h|floatformat:2 }}%
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Market Overview -->
+<section class="section-padding">
+    <div class="container-fluid px-4">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Mercados en Vivo</h2>
+                <p class="text-muted">Precios actualizados en tiempo real</p>
+            </div>
+            <a href="{% url 'core:markets' %}" class="btn btn-outline-primary">Ver todos <i class="bi bi-arrow-right ms-1"></i></a>
+        </div>
+        
+        <!-- Market tabs -->
+        <ul class="nav nav-pills market-tabs mb-4" id="marketTabs">
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#cryptoTab">
+                <i class="bi bi-currency-bitcoin me-1"></i>Crypto
+            </button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#stockTab">
+                <i class="bi bi-building me-1"></i>Acciones
+            </button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#forexTab">
+                <i class="bi bi-currency-exchange me-1"></i>Forex
+            </button></li>
+        </ul>
+        
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="cryptoTab">
+                <div class="nova-table-wrapper">
+                    <table class="table nova-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Activo</th>
+                                <th>Precio</th>
+                                <th>24h %</th>
+                                <th>Vol 24h</th>
+                                <th>Cap. Mercado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cryptoTableBody">
+                            {% for asset in featured_assets %}
+                            <tr class="asset-row" data-symbol="{{ asset.symbol }}">
+                                <td class="text-muted">{{ forloop.counter }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        {% asset_icon asset.symbol 'crypto' 34 %}
+                                        <div>
+                                            <div class="fw-semibold text-white">{{ asset.symbol }}</div>
+                                            <div class="text-muted small">{{ asset.name }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="fw-semibold text-white asset-price" data-symbol="{{ asset.symbol }}">
+                                    ${{ asset.current_price|floatformat:2 }}
+                                </td>
+                                <td>
+                                    <span class="change-badge {% if asset.is_positive %}positive{% else %}negative{% endif %}" data-change="{{ asset.symbol }}">
+                                        <i class="bi bi-caret-{% if asset.is_positive %}up{% else %}down{% endif %}-fill"></i>
+                                        {{ asset.price_change_percent_24h|floatformat:2 }}%
+                                    </span>
+                                </td>
+                                <td class="text-muted">${{ asset.volume_24h|floatformat:0 }}</td>
+                                <td class="text-muted">${{ asset.market_cap|floatformat:0 }}</td>
+                                <td>
+                                    {% if user.is_authenticated %}
+                                    <a href="{% url 'trading:asset_detail' asset.symbol %}" class="btn btn-sm btn-primary">Trade</a>
+                                    {% else %}
+                                    <a href="{% url 'account_login' %}" class="btn btn-sm btn-outline-primary">Trade</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="7" class="text-center text-muted py-4">Cargando datos del mercado...</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="stockTab">
+                <div class="market-locked-panel">
+                    <div class="market-locked-visual">
+                        <svg viewBox="0 0 200 80" class="market-locked-svg">
+                            <defs><linearGradient id="stockGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(0,102,255,0.3)"/><stop offset="100%" stop-color="rgba(0,102,255,0)"/></linearGradient></defs>
+                            <line x1="0" y1="70" x2="200" y2="70" stroke="rgba(0,102,255,0.15)" stroke-width="1"/>
+                            <line x1="0" y1="50" x2="200" y2="50" stroke="rgba(0,102,255,0.08)" stroke-width="0.5"/>
+                            <line x1="0" y1="30" x2="200" y2="30" stroke="rgba(0,102,255,0.08)" stroke-width="0.5"/>
+                            <!-- Blurred candles -->
+                            <rect x="10" y="45" width="10" height="25" fill="rgba(239,68,68,0.4)" rx="1" opacity="0.5"/>
+                            <rect x="28" y="35" width="10" height="35" fill="rgba(34,197,94,0.4)" rx="1" opacity="0.5"/>
+                            <rect x="46" y="40" width="10" height="30" fill="rgba(239,68,68,0.4)" rx="1" opacity="0.5"/>
+                            <rect x="64" y="25" width="10" height="45" fill="rgba(34,197,94,0.4)" rx="1" opacity="0.5"/>
+                            <rect x="82" y="20" width="10" height="50" fill="rgba(34,197,94,0.4)" rx="1" opacity="0.5"/>
+                            <rect x="100" y="30" width="10" height="40" fill="rgba(239,68,68,0.4)" rx="1" opacity="0.5"/>
+                            <rect x="118" y="15" width="10" height="55" fill="rgba(34,197,94,0.4)" rx="1" opacity="0.5"/>
+                            <rect x="136" y="22" width="10" height="48" fill="rgba(34,197,94,0.4)" rx="1" opacity="0.5"/>
+                            <rect x="154" y="18" width="10" height="52" fill="rgba(34,197,94,0.4)" rx="1" opacity="0.5"/>
+                            <rect x="172" y="10" width="10" height="60" fill="rgba(34,197,94,0.4)" rx="1" opacity="0.5"/>
+                            <!-- Blur overlay -->
+                            <rect x="0" y="0" width="200" height="80" fill="rgba(10,14,26,0.6)" style="backdrop-filter:blur(4px)"/>
+                        </svg>
+                        <div class="market-locked-icon"><i class="bi bi-lock-fill"></i></div>
+                    </div>
+                    <div class="market-locked-tickers">
+                        <span class="mlocked-ticker">AAPL <span class="text-success">+1.24%</span></span>
+                        <span class="mlocked-ticker">MSFT <span class="text-success">+0.87%</span></span>
+                        <span class="mlocked-ticker">TSLA <span class="text-danger">-2.14%</span></span>
+                        <span class="mlocked-ticker">NVDA <span class="text-success">+3.56%</span></span>
+                        <span class="mlocked-ticker">GOOGL <span class="text-success">+0.43%</span></span>
+                    </div>
+                    <h5 class="text-white fw-bold mb-2">Acciones disponibles para miembros</h5>
+                    <p class="text-muted small mb-3">Accede a AAPL, MSFT, TSLA, NVDA y 200+ acciones globales</p>
+                    <a href="{% url 'account_signup' %}" class="btn btn-primary px-4"><i class="bi bi-unlock me-2"></i>Desbloquear Acceso</a>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="forexTab">
+                <div class="market-locked-panel">
+                    <div class="market-locked-visual">
+                        <svg viewBox="0 0 200 80" class="market-locked-svg">
+                            <defs><linearGradient id="fxGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="rgba(0,212,255,0.3)"/><stop offset="100%" stop-color="rgba(0,212,255,0)"/></linearGradient></defs>
+                            <path d="M0,60 Q25,50 50,45 Q75,38 100,42 Q125,46 150,30 Q175,15 200,20" fill="none" stroke="rgba(0,212,255,0.5)" stroke-width="2" opacity="0.6"/>
+                            <path d="M0,65 Q30,55 60,52 Q90,48 120,38 Q150,28 200,32" fill="none" stroke="rgba(255,193,7,0.4)" stroke-width="1.5" stroke-dasharray="4 2" opacity="0.6"/>
+                            <rect x="0" y="0" width="200" height="80" fill="rgba(10,14,26,0.6)"/>
+                        </svg>
+                        <div class="market-locked-icon" style="color:#00d4ff;border-color:rgba(0,212,255,0.3);background:rgba(0,212,255,0.1)"><i class="bi bi-currency-exchange"></i></div>
+                    </div>
+                    <div class="market-locked-tickers">
+                        <span class="mlocked-ticker">EUR/USD <span class="text-success">+0.12%</span></span>
+                        <span class="mlocked-ticker">GBP/USD <span class="text-danger">-0.08%</span></span>
+                        <span class="mlocked-ticker">USD/JPY <span class="text-success">+0.31%</span></span>
+                        <span class="mlocked-ticker">USD/CHF <span class="text-success">+0.05%</span></span>
+                    </div>
+                    <h5 class="text-white fw-bold mb-2">Forex disponible para miembros</h5>
+                    <p class="text-muted small mb-3">Opera EUR/USD, GBP/USD, USD/JPY y 8+ pares con spreads mínimos</p>
+                    <a href="{% url 'account_signup' %}" class="btn btn-primary px-4"><i class="bi bi-unlock me-2"></i>Desbloquear Acceso</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section-padding features-section" id="featuresSection">
+    <div class="container-fluid px-4">
+        <div class="text-center mb-5">
+            <span class="section-eyebrow">TECNOLOGÍA DE VANGUARDIA</span>
+            <h2 class="section-title mt-2">¿Por qué Nova Capital?</h2>
+            <p class="text-muted">Infraestructura institucional al alcance de todos los inversores</p>
+        </div>
+        <div class="row g-4">
+
+            <!-- Card 1: Seguridad -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feat-card feat-security">
+                    <div class="feat-card-glow"></div>
+                    <!-- SVG Shield Animation -->
+                    <div class="feat-visual">
+                        <svg class="feat-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Outer ring -->
+                            <circle cx="60" cy="60" r="54" stroke="rgba(0,102,255,0.15)" stroke-width="1.5" stroke-dasharray="4 4"/>
+                            <!-- Rotating ring -->
+                            <circle cx="60" cy="60" r="46" stroke="rgba(0,102,255,0.3)" stroke-width="1" stroke-dasharray="12 6" class="feat-rotate-ring"/>
+                            <!-- Shield body -->
+                            <path d="M60 18 L84 28 L84 54 C84 70 72 82 60 88 C48 82 36 70 36 54 L36 28 Z" fill="rgba(0,102,255,0.12)" stroke="rgba(0,102,255,0.6)" stroke-width="1.5" class="feat-shield-pulse"/>
+                            <!-- Shield inner -->
+                            <path d="M60 26 L78 34 L78 54 C78 66 70 76 60 81 C50 76 42 66 42 54 L42 34 Z" fill="rgba(0,102,255,0.08)" stroke="rgba(0,102,255,0.3)" stroke-width="1"/>
+                            <!-- Check mark -->
+                            <path d="M50 55 L57 62 L72 47" stroke="#0066ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="feat-check-draw"/>
+                            <!-- Lock dots -->
+                            <circle cx="36" cy="38" r="3" fill="rgba(0,102,255,0.5)" class="feat-dot-blink"/>
+                            <circle cx="84" cy="38" r="3" fill="rgba(0,102,255,0.5)" class="feat-dot-blink" style="animation-delay:.4s"/>
+                            <circle cx="60" cy="96" r="3" fill="rgba(0,102,255,0.5)" class="feat-dot-blink" style="animation-delay:.8s"/>
+                            <!-- Cipher lines -->
+                            <line x1="20" y1="60" x2="30" y2="60" stroke="rgba(0,102,255,0.4)" stroke-width="1" class="feat-cipher"/>
+                            <line x1="90" y1="60" x2="100" y2="60" stroke="rgba(0,102,255,0.4)" stroke-width="1" class="feat-cipher" style="animation-delay:.3s"/>
+                            <line x1="60" y1="20" x2="60" y2="10" stroke="rgba(0,102,255,0.4)" stroke-width="1" class="feat-cipher" style="animation-delay:.6s"/>
+                        </svg>
+                        <!-- Floating badges -->
+                        <div class="feat-badge feat-badge-tl">AES-256</div>
+                        <div class="feat-badge feat-badge-br">2FA</div>
+                    </div>
+                    <div class="feat-card-body">
+                        <div class="feat-tag feat-tag-blue">SEGURIDAD</div>
+                        <h5 class="feat-title">Máxima Seguridad</h5>
+                        <p class="feat-desc">Encriptación AES-256, autenticación 2FA y protección anti-fraude en tiempo real con IA.</p>
+                        <div class="feat-stats-row">
+                            <div class="feat-stat"><span class="feat-stat-val">256-bit</span><span class="feat-stat-lbl">Cifrado</span></div>
+                            <div class="feat-stat"><span class="feat-stat-val">99.9%</span><span class="feat-stat-lbl">Uptime</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Ejecución Rápida -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feat-card feat-speed">
+                    <div class="feat-card-glow feat-glow-cyan"></div>
+                    <div class="feat-visual">
+                        <svg class="feat-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Grid lines -->
+                            <line x1="20" y1="90" x2="100" y2="90" stroke="rgba(0,212,255,0.2)" stroke-width="1"/>
+                            <line x1="20" y1="70" x2="100" y2="70" stroke="rgba(0,212,255,0.1)" stroke-width="0.5"/>
+                            <line x1="20" y1="50" x2="100" y2="50" stroke="rgba(0,212,255,0.1)" stroke-width="0.5"/>
+                            <!-- Candlesticks -->
+                            <g class="feat-candles">
+                                <!-- Candle 1 red -->
+                                <line x1="30" y1="62" x2="30" y2="82" stroke="#ef4444" stroke-width="1"/>
+                                <rect x="26" y="66" width="8" height="12" fill="#ef4444" rx="1"/>
+                                <!-- Candle 2 green -->
+                                <line x1="44" y1="55" x2="44" y2="78" stroke="#22c55e" stroke-width="1"/>
+                                <rect x="40" y="58" width="8" height="14" fill="#22c55e" rx="1"/>
+                                <!-- Candle 3 red -->
+                                <line x1="58" y1="60" x2="58" y2="80" stroke="#ef4444" stroke-width="1"/>
+                                <rect x="54" y="63" width="8" height="11" fill="#ef4444" rx="1"/>
+                                <!-- Candle 4 green big -->
+                                <line x1="72" y1="42" x2="72" y2="72" stroke="#22c55e" stroke-width="1"/>
+                                <rect x="68" y="46" width="8" height="20" fill="#22c55e" rx="1"/>
+                                <!-- Candle 5 green -->
+                                <line x1="86" y1="38" x2="86" y2="62" stroke="#22c55e" stroke-width="1"/>
+                                <rect x="82" y="41" width="8" height="16" fill="#22c55e" rx="1" class="feat-last-candle"/>
+                            </g>
+                            <!-- Speed line -->
+                            <path d="M20 75 Q40 60 60 65 Q75 68 100 35" stroke="rgba(0,212,255,0.8)" stroke-width="1.5" fill="none" stroke-dasharray="200" stroke-dashoffset="200" class="feat-line-draw"/>
+                            <!-- Lightning bolt -->
+                            <path d="M65 18 L55 42 L63 42 L53 66 L75 36 L65 36 Z" fill="rgba(0,212,255,0.9)" class="feat-lightning"/>
+                            <!-- Speed particles -->
+                            <circle cx="25" cy="55" r="2" fill="rgba(0,212,255,0.6)" class="feat-particle" style="animation-delay:0s"/>
+                            <circle cx="45" cy="48" r="1.5" fill="rgba(0,212,255,0.4)" class="feat-particle" style="animation-delay:.3s"/>
+                            <circle cx="95" cy="42" r="2" fill="rgba(0,212,255,0.6)" class="feat-particle" style="animation-delay:.6s"/>
+                        </svg>
+                        <div class="feat-badge feat-badge-tl" style="background:rgba(0,212,255,0.15);border-color:rgba(0,212,255,0.3);color:#00d4ff">0.3ms</div>
+                        <div class="feat-badge feat-badge-br" style="background:rgba(0,212,255,0.15);border-color:rgba(0,212,255,0.3);color:#00d4ff">HFT</div>
+                    </div>
+                    <div class="feat-card-body">
+                        <div class="feat-tag" style="color:#00d4ff;background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.2)">VELOCIDAD</div>
+                        <h5 class="feat-title">Ejecución Rápida</h5>
+                        <p class="feat-desc">Órdenes ejecutadas en milisegundos con tecnología de alta frecuencia y servidores colocados.</p>
+                        <div class="feat-stats-row">
+                            <div class="feat-stat"><span class="feat-stat-val" style="color:#00d4ff">0.3ms</span><span class="feat-stat-lbl">Latencia</span></div>
+                            <div class="feat-stat"><span class="feat-stat-val" style="color:#00d4ff">1M+</span><span class="feat-stat-lbl">Órdenes/s</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Análisis -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feat-card feat-analysis">
+                    <div class="feat-card-glow feat-glow-green"></div>
+                    <div class="feat-visual">
+                        <svg class="feat-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Chart area bg -->
+                            <rect x="18" y="30" width="84" height="60" rx="4" fill="rgba(34,197,94,0.05)" stroke="rgba(34,197,94,0.15)" stroke-width="1"/>
+                            <!-- Grid -->
+                            <line x1="18" y1="55" x2="102" y2="55" stroke="rgba(34,197,94,0.1)" stroke-width="0.5"/>
+                            <line x1="18" y1="70" x2="102" y2="70" stroke="rgba(34,197,94,0.1)" stroke-width="0.5"/>
+                            <line x1="46" y1="30" x2="46" y2="90" stroke="rgba(34,197,94,0.1)" stroke-width="0.5"/>
+                            <line x1="74" y1="30" x2="74" y2="90" stroke="rgba(34,197,94,0.1)" stroke-width="0.5"/>
+                            <!-- Area fill -->
+                            <path d="M18 80 Q30 72 40 65 Q52 56 60 58 Q72 60 80 48 Q90 38 102 35 L102 90 L18 90 Z" fill="rgba(34,197,94,0.08)"/>
+                            <!-- Line chart -->
+                            <path d="M18 80 Q30 72 40 65 Q52 56 60 58 Q72 60 80 48 Q90 38 102 35" stroke="#22c55e" stroke-width="2" fill="none" class="feat-chart-line"/>
+                            <!-- MA line -->
+                            <path d="M18 78 Q35 70 55 62 Q75 54 102 42" stroke="rgba(255,193,7,0.6)" stroke-width="1" stroke-dasharray="4 2" fill="none"/>
+                            <!-- Data points -->
+                            <circle cx="40" cy="65" r="3" fill="#22c55e" class="feat-data-point"/>
+                            <circle cx="60" cy="58" r="3" fill="#22c55e" class="feat-data-point" style="animation-delay:.2s"/>
+                            <circle cx="80" cy="48" r="3" fill="#22c55e" class="feat-data-point" style="animation-delay:.4s"/>
+                            <!-- Tooltip -->
+                            <rect x="72" y="34" width="32" height="18" rx="3" fill="rgba(15,23,42,0.9)" stroke="rgba(34,197,94,0.4)" stroke-width="1" class="feat-tooltip-box"/>
+                            <text x="88" y="44" text-anchor="middle" fill="#22c55e" font-size="7" font-family="monospace" class="feat-tooltip-text">+12.4%</text>
+                            <!-- RSI bar -->
+                            <rect x="18" y="96" width="84" height="6" rx="2" fill="rgba(34,197,94,0.1)"/>
+                            <rect x="18" y="96" width="55" height="6" rx="2" fill="rgba(34,197,94,0.5)" class="feat-rsi-bar"/>
+                            <text x="18" y="110" fill="rgba(34,197,94,0.6)" font-size="6" font-family="monospace">RSI 65.4</text>
+                        </svg>
+                        <div class="feat-badge feat-badge-tl" style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);color:#22c55e">+12.4%</div>
+                        <div class="feat-badge feat-badge-br" style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);color:#22c55e">AI</div>
+                    </div>
+                    <div class="feat-card-body">
+                        <div class="feat-tag" style="color:#22c55e;background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.2)">ANÁLISIS</div>
+                        <h5 class="feat-title">Análisis Avanzado</h5>
+                        <p class="feat-desc">Gráficos TradingView, 100+ indicadores técnicos y señales de IA en tiempo real.</p>
+                        <div class="feat-stats-row">
+                            <div class="feat-stat"><span class="feat-stat-val" style="color:#22c55e">100+</span><span class="feat-stat-lbl">Indicadores</span></div>
+                            <div class="feat-stat"><span class="feat-stat-val" style="color:#22c55e">AI</span><span class="feat-stat-lbl">Señales</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: Soporte 24/7 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="feat-card feat-support">
+                    <div class="feat-card-glow feat-glow-yellow"></div>
+                    <div class="feat-visual">
+                        <svg class="feat-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Outer glow ring -->
+                            <circle cx="60" cy="52" r="36" stroke="rgba(255,193,7,0.12)" stroke-width="8"/>
+                            <circle cx="60" cy="52" r="28" stroke="rgba(255,193,7,0.2)" stroke-width="1.5" stroke-dasharray="6 3" class="feat-rotate-ring" style="animation-direction:reverse"/>
+                            <!-- Avatar head -->
+                            <circle cx="60" cy="44" r="16" fill="rgba(255,193,7,0.12)" stroke="rgba(255,193,7,0.4)" stroke-width="1.5"/>
+                            <!-- Face -->
+                            <circle cx="54" cy="42" r="2.5" fill="rgba(255,193,7,0.8)"/>
+                            <circle cx="66" cy="42" r="2.5" fill="rgba(255,193,7,0.8)"/>
+                            <path d="M53 50 Q60 56 67 50" stroke="rgba(255,193,7,0.8)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                            <!-- Headset arc -->
+                            <path d="M44 44 Q44 28 60 28 Q76 28 76 44" stroke="rgba(255,193,7,0.6)" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <!-- Headset cups -->
+                            <rect x="40" y="42" width="8" height="12" rx="4" fill="rgba(255,193,7,0.3)" stroke="rgba(255,193,7,0.6)" stroke-width="1.5"/>
+                            <rect x="72" y="42" width="8" height="12" rx="4" fill="rgba(255,193,7,0.3)" stroke="rgba(255,193,7,0.6)" stroke-width="1.5"/>
+                            <!-- Mic -->
+                            <line x1="76" y1="54" x2="80" y2="62" stroke="rgba(255,193,7,0.5)" stroke-width="1.5" stroke-linecap="round"/>
+                            <circle cx="80" cy="64" r="2" fill="rgba(255,193,7,0.4)" stroke="rgba(255,193,7,0.6)" stroke-width="1"/>
+                            <!-- Body / shoulders -->
+                            <path d="M36 88 Q36 72 60 72 Q84 72 84 88" fill="rgba(255,193,7,0.08)" stroke="rgba(255,193,7,0.25)" stroke-width="1.5"/>
+                            <!-- Chat bubbles -->
+                            <rect x="20" y="78" width="28" height="14" rx="7" fill="rgba(255,193,7,0.12)" stroke="rgba(255,193,7,0.3)" stroke-width="1" class="feat-bubble-pop"/>
+                            <circle cx="27" cy="85" r="2" fill="rgba(255,193,7,0.5)"/>
+                            <circle cx="34" cy="85" r="2" fill="rgba(255,193,7,0.5)" style="animation-delay:.2s"/>
+                            <circle cx="41" cy="85" r="2" fill="rgba(255,193,7,0.5)" style="animation-delay:.4s"/>
+                            <!-- Online indicator -->
+                            <circle cx="72" cy="30" r="5" fill="#22c55e" class="feat-dot-blink"/>
+                            <circle cx="72" cy="30" r="8" fill="rgba(34,197,94,0.2)" class="feat-dot-blink" style="animation-delay:.1s"/>
+                            <!-- Signal waves -->
+                            <path d="M88 60 Q94 52 88 44" stroke="rgba(255,193,7,0.3)" stroke-width="1.5" fill="none" stroke-linecap="round" class="feat-wave" style="animation-delay:0s"/>
+                            <path d="M93 63 Q102 52 93 41" stroke="rgba(255,193,7,0.2)" stroke-width="1.5" fill="none" stroke-linecap="round" class="feat-wave" style="animation-delay:.3s"/>
+                        </svg>
+                        <div class="feat-badge feat-badge-tl" style="background:rgba(255,193,7,0.15);border-color:rgba(255,193,7,0.3);color:#ffc107">24/7</div>
+                        <div class="feat-badge feat-badge-br" style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);color:#22c55e">● Online</div>
+                    </div>
+                    <div class="feat-card-body">
+                        <div class="feat-tag" style="color:#ffc107;background:rgba(255,193,7,0.1);border-color:rgba(255,193,7,0.2)">SOPORTE</div>
+                        <h5 class="feat-title">Soporte 24/7</h5>
+                        <p class="feat-desc">Equipo de expertos disponible las 24 horas. Chat en vivo, email y llamada prioritaria.</p>
+                        <div class="feat-stats-row">
+                            <div class="feat-stat"><span class="feat-stat-val" style="color:#ffc107">&lt;2min</span><span class="feat-stat-lbl">Respuesta</span></div>
+                            <div class="feat-stat"><span class="feat-stat-val" style="color:#ffc107">98%</span><span class="feat-stat-lbl">Satisfacción</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Account Types -->
+<section class="section-padding acct-section">
+    <div class="container-fluid px-4">
+        <div class="text-center mb-5">
+            <span class="section-eyebrow">PLANES DE INVERSIÓN</span>
+            <h2 class="section-title mt-2">Tipos de Cuenta</h2>
+            <p class="text-muted">Elige el nivel que mejor se adapte a tus objetivos financieros</p>
+        </div>
+        <div class="row g-4 justify-content-center">
+
+            <!-- Basic -->
+            <div class="col-md-6 col-lg-3">
+                <div class="acct-card acct-basic">
+                    <div class="acct-visual">
+                        <svg viewBox="0 0 80 60" class="acct-svg">
+                            <line x1="5" y1="50" x2="75" y2="50" stroke="rgba(173,181,189,0.2)" stroke-width="1"/>
+                            <polyline points="5,45 20,38 35,40 50,30 65,25 75,20" fill="none" stroke="rgba(173,181,189,0.5)" stroke-width="1.5"/>
+                            <circle cx="75" cy="20" r="3" fill="#adb5bd"/>
+                            <rect x="10" y="42" width="6" height="8" fill="rgba(173,181,189,0.3)" rx="1"/>
+                            <rect x="22" y="36" width="6" height="14" fill="rgba(173,181,189,0.4)" rx="1"/>
+                            <rect x="34" y="38" width="6" height="12" fill="rgba(173,181,189,0.3)" rx="1"/>
+                            <rect x="46" y="28" width="6" height="22" fill="rgba(173,181,189,0.5)" rx="1"/>
+                            <rect x="58" y="22" width="6" height="28" fill="rgba(173,181,189,0.6)" rx="1"/>
+                        </svg>
+                    </div>
+                    <div class="acct-tier-badge" style="color:#adb5bd;border-color:rgba(173,181,189,0.3)">⭐ BASIC</div>
+                    <div class="acct-price">$0 <span>/ mes</span></div>
+                    <div class="acct-min">Depósito mínimo: <strong>$100</strong></div>
+                    <ul class="acct-features">
+                        <li class="yes"><i class="bi bi-check2-circle"></i> Trading básico</li>
+                        <li class="yes"><i class="bi bi-check2-circle"></i> 50+ activos</li>
+                        <li class="yes"><i class="bi bi-check2-circle"></i> Soporte email</li>
+                        <li class="no"><i class="bi bi-x-circle"></i> Análisis avanzado</li>
+                        <li class="no"><i class="bi bi-x-circle"></i> Gestor personal</li>
+                    </ul>
+                    <a href="{% url 'account_signup' %}" class="btn acct-btn acct-btn-basic w-100">Comenzar Gratis</a>
+                </div>
+            </div>
+
+            <!-- Gold — featured -->
+            <div class="col-md-6 col-lg-3">
+                <div class="acct-card acct-gold acct-featured">
+                    <div class="acct-popular-badge">MÁS POPULAR</div>
+                    <div class="acct-visual">
+                        <svg viewBox="0 0 80 60" class="acct-svg">
+                            <defs>
+                                <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="rgba(255,193,7,0.4)"/>
+                                    <stop offset="100%" stop-color="rgba(255,193,7,0)"/>
+                                </linearGradient>
+                            </defs>
+                            <line x1="5" y1="50" x2="75" y2="50" stroke="rgba(255,193,7,0.2)" stroke-width="1"/>
+                            <path d="M5,48 Q15,40 25,35 Q35,28 45,22 Q55,15 75,8" fill="none" stroke="#ffc107" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M5,48 Q15,40 25,35 Q35,28 45,22 Q55,15 75,8 L75,50 L5,50 Z" fill="url(#goldGrad)"/>
+                            <circle cx="75" cy="8" r="4" fill="#ffc107" class="acct-pulse-dot"/>
+                            <!-- Candles -->
+                            <line x1="15" y1="30" x2="15" y2="48" stroke="#ffc107" stroke-width="1"/>
+                            <rect x="12" y="33" width="6" height="10" fill="rgba(255,193,7,0.6)" rx="1"/>
+                            <line x1="30" y1="22" x2="30" y2="40" stroke="#22c55e" stroke-width="1"/>
+                            <rect x="27" y="25" width="6" height="10" fill="rgba(34,197,94,0.6)" rx="1"/>
+                            <line x1="45" y1="15" x2="45" y2="35" stroke="#22c55e" stroke-width="1"/>
+                            <rect x="42" y="18" width="6" height="12" fill="rgba(34,197,94,0.7)" rx="1"/>
+                        </svg>
+                    </div>
+                    <div class="acct-tier-badge" style="color:#ffc107;border-color:rgba(255,193,7,0.4)">⭐⭐⭐ GOLD</div>
+                    <div class="acct-price" style="color:#ffc107">$5,000 <span>mín.</span></div>
+                    <div class="acct-min">Comisión: <strong>0.15%</strong></div>
+                    <ul class="acct-features">
+                        <li class="yes"><i class="bi bi-check2-circle"></i> Todo en Silver</li>
+                        <li class="yes"><i class="bi bi-check2-circle"></i> 200+ activos</li>
+                        <li class="yes"><i class="bi bi-check2-circle"></i> Análisis avanzado</li>
+                        <li class="yes"><i class="bi bi-check2-circle"></i> Gestor personal</li>
+                        <li class="no"><i class="bi bi-x-circle"></i> Comisiones 0%</li>
+                    </ul>
+                    <a href="{% url 'account_signup' %}" class="btn acct-btn acct-btn-gold w-100">Elegir Gold</a>
+                </div>
+            </div>
+
+            <!-- VIP -->
+            <div class="col-md-6 col-lg-3">
+                <div class="acct-card acct-vip">
+                    <div class="acct-visual">
+                        <svg viewBox="0 0 80 60" class="acct-svg">
+                            <defs>
+                                <linearGradient id="vipGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="rgba(167,139,250,0.5)"/>
+                                    <stop offset="100%" stop-color="rgba(167,139,250,0)"/>
+                                </linearGradient>
+                            </defs>
+                            <!-- Crown -->
+                            <path d="M25,28 L30,18 L40,25 L50,18 L55,28 L55,35 L25,35 Z" fill="rgba(167,139,250,0.2)" stroke="rgba(167,139,250,0.7)" stroke-width="1.2"/>
+                            <circle cx="30" cy="18" r="2.5" fill="#a78bfa"/>
+                            <circle cx="40" cy="25" r="2.5" fill="#a78bfa"/>
+                            <circle cx="50" cy="18" r="2.5" fill="#a78bfa"/>
+                            <!-- Chart line -->
+                            <path d="M5,50 Q20,42 35,36 Q50,28 75,10" fill="none" stroke="#a78bfa" stroke-width="2"/>
+                            <path d="M5,50 Q20,42 35,36 Q50,28 75,10 L75,55 L5,55 Z" fill="url(#vipGrad)"/>
+                            <!-- Stars -->
+                            <circle cx="12" cy="15" r="1.5" fill="rgba(167,139,250,0.6)" class="acct-star-twinkle"/>
+                            <circle cx="68" cy="20" r="1.5" fill="rgba(167,139,250,0.6)" class="acct-star-twinkle" style="animation-delay:.5s"/>
+                            <circle cx="40" cy="8" r="2" fill="rgba(167,139,250,0.8)" class="acct-star-twinkle" style="animation-delay:1s"/>
+                        </svg>
+                    </div>
+                    <div class="acct-tier-badge" style="color:#a78bfa;border-color:rgba(167,139,250,0.4)">👑 VIP ELITE</div>
+                    <div class="acct-price" style="color:#a78bfa">$50,000 <span>mín.</span></div>
+                    <div class="acct-min">Comisión: <strong style="color:#22c55e">0%</strong></div>
+                    <ul class="acct-features">
+                        <li class="yes"><i class="bi bi-check2-circle"></i> Todo en Platinum</li>
+                        <li class="yes"><i class="bi bi-check2-circle"></i> 350+ activos</li>
+                        <li class="yes"><i class="bi bi-check2-circle"></i> Comisiones 0%</li>
+                        <li class="yes"><i class="bi bi-check2-circle"></i> Acceso VIP 24/7</li>
+                        <li class="yes"><i class="bi bi-check2-circle"></i> Estrategias IA</li>
+                    </ul>
+                    <a href="{% url 'account_signup' %}" class="btn acct-btn acct-btn-vip w-100">Elegir VIP Elite</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- News Section -->
+{% if latest_news %}
+<section class="section-padding news-section">
+    <div class="container-fluid px-4">
+        <div class="section-header">
+            <div>
+                <span class="section-eyebrow">MERCADOS & ANÁLISIS</span>
+                <h2 class="section-title mt-1">Últimas Noticias</h2>
+                <p class="text-muted">Mantente informado del mercado global</p>
+            </div>
+            <a href="{% url 'trading:news' %}" class="btn btn-outline-primary">Ver más <i class="bi bi-arrow-right ms-1"></i></a>
+        </div>
+        <div class="row g-4">
+            {% for article in latest_news %}
+            <div class="col-md-4">
+                <div class="news-card-premium">
+                    <!-- Category color bar -->
+                    <div class="news-card-bar {% if article.category == 'crypto' %}bar-blue{% elif article.category == 'stocks' %}bar-green{% else %}bar-cyan{% endif %}"></div>
+                    <!-- Visual header -->
+                    <div class="news-card-visual">
+                        {% if article.image_url %}
+                        <div class="news-img-bg" style="background-image:url('{{ article.image_url }}')"></div>
+                        {% else %}
+                        <div class="news-img-bg news-img-generated">
+                            <svg viewBox="0 0 200 100" class="news-gen-svg">
+                                <defs><linearGradient id="ng{{forloop.counter}}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(0,102,255,0.2)"/><stop offset="100%" stop-color="rgba(0,102,255,0)"/></linearGradient></defs>
+                                <path d="M0,80 Q30,65 60,55 Q90,45 120,35 Q150,25 200,15 L200,100 L0,100 Z" fill="url(#ng{{forloop.counter}})"/>
+                                <path d="M0,80 Q30,65 60,55 Q90,45 120,35 Q150,25 200,15" fill="none" stroke="rgba(0,102,255,0.6)" stroke-width="2"/>
+                                <circle cx="60" cy="55" r="3" fill="#0066ff" opacity="0.8"/>
+                                <circle cx="120" cy="35" r="3" fill="#0066ff" opacity="0.8"/>
+                                <circle cx="200" cy="15" r="3" fill="#0066ff" opacity="0.8"/>
+                            </svg>
+                        </div>
+                        {% endif %}
+                        <div class="news-overlay-badge">{{ article.get_category_display }}</div>
+                    </div>
+                    <div class="news-card-body-premium">
+                        <div class="news-meta-row">
+                            <span class="news-source-tag"><i class="bi bi-broadcast me-1"></i>{{ article.source }}</span>
+                            <span class="news-time-tag"><i class="bi bi-clock me-1"></i>{{ article.published_at|timesince }}</span>
+                        </div>
+                        <h6 class="news-title-premium">{{ article.title|truncatechars:75 }}</h6>
+                        <p class="news-summary-premium">{{ article.summary|truncatechars:110 }}</p>
+                        <div class="news-card-footer-row">
+                            <div class="news-sentiment {% if '+' in article.summary or 'sube' in article.summary|lower or 'récord' in article.summary|lower %}positive{% else %}neutral{% endif %}">
+                                <i class="bi bi-graph-up-arrow me-1"></i>Análisis
+                            </div>
+                            <a href="{% url 'trading:news' %}" class="news-read-btn">Leer <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA Section -->
+<section class="cta-section-premium">
+    <div class="cta-bg-grid"></div>
+    <div class="cta-glow-left"></div>
+    <div class="cta-glow-right"></div>
+    <div class="container-fluid px-4">
+        <div class="row align-items-center">
+            <div class="col-lg-7 text-center text-lg-start mb-4 mb-lg-0">
+                <!-- Mini live chart in CTA -->
+                <div class="cta-chart-row mb-3">
+                    <div class="cta-mini-stat"><span class="cta-mini-val text-success">+18.4%</span><span class="cta-mini-lbl">Rendimiento promedio</span></div>
+                    <div class="cta-mini-stat"><span class="cta-mini-val">$2.4B</span><span class="cta-mini-lbl">Volumen 24h</span></div>
+                    <div class="cta-mini-stat"><span class="cta-mini-val">180K+</span><span class="cta-mini-lbl">Inversores activos</span></div>
+                </div>
+                <h2 class="cta-title">Comienza a Invertir <span class="gradient-text">Hoy Mismo</span></h2>
+                <p class="cta-subtitle">Únete a más de 180,000 inversores que confían en Nova Capital Group. Registro gratuito en menos de 2 minutos.</p>
+                <div class="cta-trust-row mt-3">
+                    <span><i class="bi bi-shield-fill-check text-success"></i> Regulado</span>
+                    <span><i class="bi bi-lock-fill text-primary"></i> SSL 256-bit</span>
+                    <span><i class="bi bi-phone text-info"></i> App Móvil</span>
+                    <span><i class="bi bi-headset text-warning"></i> Soporte 24/7</span>
+                </div>
+            </div>
+            <div class="col-lg-5 text-center">
+                <!-- Animated mini dashboard preview -->
+                <div class="cta-dashboard-preview">
+                    <div class="cta-dash-header">
+                        <div class="cta-dash-dots"><span></span><span></span><span></span></div>
+                        <span class="cta-dash-title">Nova Capital · Dashboard</span>
+                    </div>
+                    <div class="cta-dash-body">
+                        <div class="cta-dash-balance">
+                            <span class="cta-dash-bal-label">Saldo Total</span>
+                            <span class="cta-dash-bal-val">$<span id="ctaBalVal">24,850</span></span>
+                            <span class="cta-dash-bal-change text-success">▲ +12.4% este mes</span>
+                        </div>
+                        <canvas id="ctaMiniChart" height="60"></canvas>
+                        <div class="cta-dash-assets">
+                            <div class="cta-asset-row"><span class="cta-asset-sym">BTC</span><span class="cta-asset-bar"><span class="cta-asset-fill" style="width:72%;background:#f7931a"></span></span><span class="cta-asset-pct text-warning">72%</span></div>
+                            <div class="cta-asset-row"><span class="cta-asset-sym">ETH</span><span class="cta-asset-bar"><span class="cta-asset-fill" style="width:18%;background:#627eea"></span></span><span class="cta-asset-pct" style="color:#627eea">18%</span></div>
+                            <div class="cta-asset-row"><span class="cta-asset-sym">SOL</span><span class="cta-asset-bar"><span class="cta-asset-fill" style="width:10%;background:#9945ff"></span></span><span class="cta-asset-pct" style="color:#9945ff">10%</span></div>
+                        </div>
+                    </div>
+                    <div class="cta-dash-footer">
+                        {% if not user.is_authenticated %}
+                        <a href="{% url 'account_signup' %}" class="btn btn-primary w-100 fw-semibold">
+                            <i class="bi bi-rocket-takeoff me-2"></i>Crear Cuenta Gratis
+                        </a>
+                        {% else %}
+                        <a href="{% url 'trading:market' %}" class="btn btn-primary w-100 fw-semibold">
+                            <i class="bi bi-graph-up me-2"></i>Ir al Trading
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Hero chart + CTA mini chart
+document.addEventListener('DOMContentLoaded', function() {
+    const labels = [], data = [];
+    let price = 65000;
+    for (let i = 30; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        labels.push(d.toLocaleDateString('es', {month:'short', day:'numeric'}));
+        price += (Math.random() - 0.45) * 2000;
+        data.push(Math.max(price, 50000));
+    }
+    const ctx = document.getElementById('heroChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: { labels, datasets: [{ data, borderColor: '#0066FF', backgroundColor: 'rgba(0,102,255,0.1)', borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0 }] },
+            options: { responsive: true, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '$' + c.raw.toLocaleString('en', {maximumFractionDigits:0}) } } }, scales: { x: { display: false }, y: { display: false } }, animation: { duration: 1000 } }
+        });
+    }
+
+    // CTA mini chart
+    const ctaCtx = document.getElementById('ctaMiniChart');
+    if (ctaCtx) {
+        const ctaData = [];
+        let v = 18000;
+        for (let i = 0; i < 20; i++) { v += (Math.random() - 0.4) * 800; ctaData.push(Math.max(v, 15000)); }
+        new Chart(ctaCtx, {
+            type: 'line',
+            data: { labels: ctaData.map((_,i)=>i), datasets: [{ data: ctaData, borderColor: '#0066FF', backgroundColor: 'rgba(0,102,255,0.08)', borderWidth: 1.5, fill: true, tension: 0.4, pointRadius: 0 }] },
+            options: { responsive: true, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false } }, animation: { duration: 800 } }
+        });
+    }
+
+    // Animate CTA balance counter
+    const balEl = document.getElementById('ctaBalVal');
+    if (balEl) {
+        let current = 20000, target = 24850;
+        const step = () => { current += Math.ceil((target - current) / 15); balEl.textContent = current.toLocaleString('en'); if (current < target) requestAnimationFrame(step); };
+        setTimeout(step, 600);
+    }
+
+    fetchLivePrices();
+    setInterval(fetchLivePrices, 30000);
+});
+
+function fetchLivePrices() {
+    fetch('/api/prices/?type=crypto').then(r => r.json()).then(data => { if (data.success && data.prices) updatePriceDisplay(data.prices); }).catch(() => {});
+}
+
+function updatePriceDisplay(prices) {
+    if (prices.BTC) {
+        const btc = prices.BTC;
+        const priceEl = document.getElementById('heroBtcPrice');
+        const changeEl = document.getElementById('heroBtcChange');
+        if (priceEl) priceEl.textContent = '$' + btc.price.toLocaleString('en', {maximumFractionDigits:0});
+        if (changeEl) { const sign = btc.change_24h >= 0 ? '+' : ''; changeEl.textContent = sign + btc.change_24h.toFixed(2) + '%'; changeEl.className = btc.change_24h >= 0 ? 'text-success small' : 'text-danger small'; }
+    }
+    if (prices.ETH) {
+        const el = document.getElementById('floatEthPrice'), ch = document.getElementById('floatEthChange');
+        if (el) el.textContent = '$' + prices.ETH.price.toLocaleString('en', {maximumFractionDigits:0});
+        if (ch) { const sign = prices.ETH.change_24h >= 0 ? '+' : ''; ch.textContent = sign + prices.ETH.change_24h.toFixed(2) + '%'; ch.className = prices.ETH.change_24h >= 0 ? 'badge bg-success-subtle text-success' : 'badge bg-danger-subtle text-danger'; }
+    }
+    if (prices.SOL) {
+        const el = document.getElementById('floatSolPrice'), ch = document.getElementById('floatSolChange');
+        if (el) el.textContent = '$' + prices.SOL.price.toFixed(2);
+        if (ch) { const sign = prices.SOL.change_24h >= 0 ? '+' : ''; ch.textContent = sign + prices.SOL.change_24h.toFixed(2) + '%'; ch.className = prices.SOL.change_24h >= 0 ? 'badge bg-success-subtle text-success' : 'badge bg-danger-subtle text-danger'; }
+    }
+    Object.entries(prices).forEach(([symbol, data]) => {
+        document.querySelectorAll(`[data-symbol="${symbol}"]`).forEach(el => {
+            if (el.classList.contains('asset-price') || el.classList.contains('ticker-price'))
+                el.textContent = '$' + data.price.toLocaleString('en', {maximumFractionDigits: data.price < 1 ? 6 : 2});
+        });
+        document.querySelectorAll(`[data-change="${symbol}"]`).forEach(el => {
+            const sign = data.change_24h >= 0 ? '+' : '';
+            el.textContent = sign + data.change_24h.toFixed(2) + '%';
+            el.className = el.className.replace(/positive|negative/g, '') + (data.change_24h >= 0 ? ' positive' : ' negative');
+        });
+    });
+}
+</script>
+{% endblock %}

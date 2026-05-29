@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block title %}Sobre Nosotros{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-5 mt-3">
+  <!-- Hero -->
+  <div class="text-center py-5 mb-5" style="background:linear-gradient(135deg,rgba(0,102,255,0.06),rgba(0,212,255,0.03));border-radius:20px;border:1px solid var(--border)">
+    <h1 class="section-title mb-3">Sobre Nova Capital Group</h1>
+    <p class="text-muted fs-5 mx-auto" style="max-width:600px">
+      Somos una plataforma de inversión digital de vanguardia, comprometida con democratizar el acceso a los mercados financieros globales.
+    </p>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-4 mb-5 text-center">
+    <div class="col-6 col-md-3">
+      <div class="about-stat-card">
+        <div class="about-stat-visual">
+          <svg viewBox="0 0 60 40" class="about-stat-svg">
+            <path d="M0,35 Q10,28 20,22 Q30,16 40,10 Q50,5 60,2 L60,40 L0,40 Z" fill="rgba(0,102,255,0.15)"/>
+            <path d="M0,35 Q10,28 20,22 Q30,16 40,10 Q50,5 60,2" fill="none" stroke="#0066ff" stroke-width="2"/>
+            <circle cx="60" cy="2" r="3" fill="#0066ff" class="feat-dot-blink"/>
+          </svg>
+        </div>
+        <div class="about-stat-num text-primary" id="statUsers">180K+</div>
+        <div class="text-muted small">Usuarios Activos</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="about-stat-card">
+        <div class="about-stat-visual">
+          <svg viewBox="0 0 60 40" class="about-stat-svg">
+            <rect x="5" y="20" width="8" height="20" fill="rgba(34,197,94,0.4)" rx="1"/>
+            <rect x="17" y="12" width="8" height="28" fill="rgba(34,197,94,0.5)" rx="1"/>
+            <rect x="29" y="6" width="8" height="34" fill="rgba(34,197,94,0.7)" rx="1"/>
+            <rect x="41" y="2" width="8" height="38" fill="rgba(34,197,94,0.9)" rx="1"/>
+            <line x1="0" y1="38" x2="60" y2="38" stroke="rgba(34,197,94,0.2)" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="about-stat-num text-success">$2.4B+</div>
+        <div class="text-muted small">Volumen Mensual</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="about-stat-card">
+        <div class="about-stat-visual">
+          <svg viewBox="0 0 60 40" class="about-stat-svg">
+            <circle cx="30" cy="20" r="16" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.2)" stroke-width="1"/>
+            <circle cx="30" cy="20" r="10" fill="rgba(0,212,255,0.12)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+            <circle cx="30" cy="20" r="4" fill="rgba(0,212,255,0.5)"/>
+            <line x1="30" y1="4" x2="30" y2="12" stroke="rgba(0,212,255,0.5)" stroke-width="1.5"/>
+            <line x1="30" y1="28" x2="30" y2="36" stroke="rgba(0,212,255,0.5)" stroke-width="1.5"/>
+            <line x1="14" y1="20" x2="22" y2="20" stroke="rgba(0,212,255,0.5)" stroke-width="1.5"/>
+            <line x1="38" y1="20" x2="46" y2="20" stroke="rgba(0,212,255,0.5)" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="about-stat-num text-info">350+</div>
+        <div class="text-muted small">Activos Disponibles</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="about-stat-card">
+        <div class="about-stat-visual">
+          <svg viewBox="0 0 60 40" class="about-stat-svg">
+            <path d="M30 5 L42 12 L42 26 C42 34 36 39 30 42 C24 39 18 34 18 26 L18 12 Z" fill="rgba(255,193,7,0.12)" stroke="rgba(255,193,7,0.4)" stroke-width="1.5" class="feat-shield-pulse"/>
+            <path d="M24 24 L28 28 L37 19" stroke="#ffc107" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feat-check-draw"/>
+          </svg>
+        </div>
+        <div class="about-stat-num text-warning">99.9%</div>
+        <div class="text-muted small">Uptime Garantizado</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mission -->
+  <div class="row g-4 align-items-center mb-5">
+    <div class="col-lg-6">
+      <h2 class="section-title mb-3">Nuestra Misión</h2>
+      <p class="text-muted">En Nova Capital Group creemos que todos merecen acceso a las mismas herramientas de inversión que usan los profesionales. Nuestra plataforma combina tecnología institucional con una interfaz intuitiva para que puedas invertir con confianza.</p>
+      <p class="text-muted">Desde criptomonedas hasta acciones y forex, ofrecemos un ecosistema completo de inversión con datos en tiempo real, análisis avanzado y soporte 24/7.</p>
+      <div class="d-flex gap-3 mt-4">
+        <a href="{% url 'account_signup' %}" class="btn btn-primary px-4">Comenzar Ahora</a>
+        <a href="{% url 'core:contact' %}" class="btn btn-outline-secondary px-4">Contactar</a>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="row g-3">
+        <div class="col-6">
+          <div class="feature-card">
+            <div class="feature-icon"><i class="bi bi-shield-fill-check"></i></div>
+            <h6 class="text-white fw-semibold mt-3">Seguridad</h6>
+            <p class="text-muted small">Encriptación AES-256 y 2FA para proteger tus fondos.</p>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="feature-card">
+            <div class="feature-icon" style="background:rgba(0,212,255,0.1)"><i class="bi bi-lightning-fill text-info"></i></div>
+            <h6 class="text-white fw-semibold mt-3">Velocidad</h6>
+            <p class="text-muted small">Ejecución de órdenes en milisegundos.</p>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="feature-card">
+            <div class="feature-icon" style="background:rgba(0,200,83,0.1)"><i class="bi bi-globe text-success"></i></div>
+            <h6 class="text-white fw-semibold mt-3">Global</h6>
+            <p class="text-muted small">Acceso a mercados de todo el mundo.</p>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="feature-card">
+            <div class="feature-icon" style="background:rgba(255,193,7,0.1)"><i class="bi bi-headset text-warning"></i></div>
+            <h6 class="text-white fw-semibold mt-3">Soporte</h6>
+            <p class="text-muted small">Equipo disponible 24/7 para ayudarte.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Security section -->
+  <div class="nova-card p-4 mb-5" style="background:linear-gradient(135deg,rgba(0,102,255,0.06),rgba(0,212,255,0.03))">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-8">
+        <h4 class="text-white fw-bold mb-2"><i class="bi bi-shield-fill-check text-success me-2"></i>Seguridad de Nivel Institucional</h4>
+        <p class="text-muted mb-0">Tus fondos están protegidos con encriptación de grado militar, autenticación multifactor, monitoreo anti-fraude en tiempo real y almacenamiento en frío para activos digitales. Cumplimos con los más altos estándares de seguridad financiera internacional.</p>
+      </div>
+      <div class="col-lg-4 text-center">
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+          <div class="text-center">
+            <i class="bi bi-lock-fill fs-2 text-primary d-block mb-1"></i>
+            <div class="text-muted small">SSL 256-bit</div>
+          </div>
+          <div class="text-center">
+            <i class="bi bi-phone fs-2 text-success d-block mb-1"></i>
+            <div class="text-muted small">2FA</div>
+          </div>
+          <div class="text-center">
+            <i class="bi bi-eye-slash fs-2 text-info d-block mb-1"></i>
+            <div class="text-muted small">Anti-fraude</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

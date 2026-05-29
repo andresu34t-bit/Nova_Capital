@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static asset_tags %}
+{% block title %}Mercado en Vivo{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 py-4 mt-4">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h3 class="text-white fw-bold mb-0">Mercado en Vivo</h3>
+      <p class="text-muted small mb-0">Precios actualizados en tiempo real</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge-dot me-1"></span>
+      <span class="text-muted small">En vivo</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-pills market-tabs mb-4" id="marketTabs">
+    <li class="nav-item">
+      <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#cryptoPanel">
+        <i class="bi bi-currency-bitcoin me-1"></i>Criptomonedas
+        <span class="badge bg-primary ms-1">{{ crypto_assets|length }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="pill" data-bs-target="#stockPanel">
+        <i class="bi bi-building me-1"></i>Acciones
+        <span class="badge bg-secondary ms-1">{{ stock_assets|length }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="pill" data-bs-target="#forexPanel">
+        <i class="bi bi-currency-exchange me-1"></i>Forex
+        <span class="badge bg-secondary ms-1">{{ forex_assets|length }}</span>
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <!-- Crypto -->
+    <div class="tab-pane fade show active" id="cryptoPanel">
+      <div class="nova-table-wrapper">
+        <table class="table nova-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Activo</th><th>Precio</th><th>24h %</th>
+              <th class="d-none d-md-table-cell">Vol 24h</th>
+              <th class="d-none d-lg-table-cell">Cap. Mercado</th>
+              <th class="d-none d-lg-table-cell">Máx 24h</th>
+              <th class="d-none d-lg-table-cell">Mín 24h</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="cryptoBody">
+            {% for asset in crypto_assets %}
+            <tr class="asset-row" onclick="window.location='{% url 'trading:asset_detail' asset.symbol %}'">
+              <td class="text-muted">{{ forloop.counter }}</td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  {% asset_icon asset.symbol 'crypto' 36 %}
+                  <div>
+                    <div class="fw-semibold text-white">{{ asset.symbol }}</div>
+                    <div class="text-muted small">{{ asset.name }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="fw-semibold text-white asset-price" data-symbol="{{ asset.symbol }}">${{ asset.current_price|floatformat:2 }}</td>
+              <td>
+                <span class="change-badge {% if asset.is_positive %}positive{% else %}negative{% endif %}" data-change="{{ asset.symbol }}">
+                  <i class="bi bi-caret-{% if asset.is_positive %}up{% else %}down{% endif %}-fill"></i>
+                  {{ asset.price_change_percent_24h|floatformat:2 }}%
+                </span>
+              </td>
+              <td class="text-muted d-none d-md-table-cell">${{ asset.volume_24h|floatformat:0 }}</td>
+              <td class="text-muted d-none d-lg-table-cell">${{ asset.market_cap|floatformat:0 }}</td>
+              <td class="text-success d-none d-lg-table-cell">${{ asset.high_24h|floatformat:2 }}</td>
+              <td class="text-danger d-none d-lg-table-cell">${{ asset.low_24h|floatformat:2 }}</td>
+              <td onclick="event.stopPropagation()">
+                <div class="d-flex gap-1">
+                  <a href="{% url 'trading:asset_detail' asset.symbol %}" class="btn btn-sm btn-primary">Trade</a>
+                  <button class="btn btn-sm btn-outline-secondary {% if asset.id in watchlist_ids %}text-warning{% endif %}"
+                          onclick="toggleWL('{{ asset.symbol }}', this)">
+                    <i class="bi bi-star{% if asset.id in watchlist_ids %}-fill{% endif %}"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="9" class="text-center text-muted py-5">Cargando datos...</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Stocks -->
+    <div class="tab-pane fade" id="stockPanel">
+      <div class="nova-table-wrapper">
+        <table class="table nova-table">
+          <thead><tr><th>#</th><th>Empresa</th><th>Precio</th><th>24h %</th><th>Acción</th></tr></thead>
+          <tbody>
+            {% for asset in stock_assets %}
+            <tr class="asset-row" onclick="window.location='{% url 'trading:asset_detail' asset.symbol %}'">
+              <td class="text-muted">{{ forloop.counter }}</td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  {% asset_icon asset.symbol 'stock' 36 %}
+                  <div>
+                    <div class="fw-semibold text-white">{{ asset.symbol }}</div>
+                    <div class="text-muted small">{{ asset.name }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="fw-semibold text-white asset-price" data-symbol="{{ asset.symbol }}">${{ asset.current_price|floatformat:2 }}</td>
+              <td>
+                <span class="change-badge {% if asset.is_positive %}positive{% else %}negative{% endif %}">
+                  {{ asset.price_change_percent_24h|floatformat:2 }}%
+                </span>
+              </td>
+              <td><a href="{% url 'trading:asset_detail' asset.symbol %}" class="btn btn-sm btn-primary" onclick="event.stopPropagation()">Trade</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-5">Sin acciones disponibles</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Forex -->
+    <div class="tab-pane fade" id="forexPanel">
+      <div class="nova-table-wrapper">
+        <table class="table nova-table">
+          <thead><tr><th>#</th><th>Par</th><th>Precio</th><th>24h %</th><th>Acción</th></tr></thead>
+          <tbody>
+            {% for asset in forex_assets %}
+            <tr class="asset-row" onclick="window.location='{% url 'trading:asset_detail' asset.symbol %}'">
+              <td class="text-muted">{{ forloop.counter }}</td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  {% asset_icon asset.symbol 'forex' 36 %}
+                  <div>
+                    <div class="fw-semibold text-white">{{ asset.symbol }}</div>
+                    <div class="text-muted small">{{ asset.name }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="fw-semibold text-white">${{ asset.current_price|floatformat:4 }}</td>
+              <td>
+                <span class="change-badge {% if asset.is_positive %}positive{% else %}negative{% endif %}">
+                  {{ asset.price_change_percent_24h|floatformat:2 }}%
+                </span>
+              </td>
+              <td><a href="{% url 'trading:asset_detail' asset.symbol %}" class="btn btn-sm btn-primary" onclick="event.stopPropagation()">Trade</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-5">Sin pares forex disponibles</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleWL(symbol, btn) {
+  const fd = new FormData();
+  fd.append('symbol', symbol);
+  fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+  fetch('/trading/watchlist/toggle/', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(d => {
+      const icon = btn.querySelector('i');
+      if (d.status === 'added') { icon.className = 'bi bi-star-fill'; btn.classList.add('text-warning'); showToast('Añadido a watchlist', 'success'); }
+      else { icon.className = 'bi bi-star'; btn.classList.remove('text-warning'); showToast('Eliminado de watchlist', 'info'); }
+    });
+}
+
+// Live price updates every 30s
+setInterval(() => {
+  fetch('/api/prices/?type=crypto').then(r => r.json()).then(data => {
+    if (!data.success) return;
+    Object.entries(data.prices).forEach(([sym, info]) => {
+      document.querySelectorAll(`.asset-price[data-symbol="${sym}"]`).forEach(el => {
+        const old = parseFloat(el.textContent.replace('$','').replace(',',''));
+        el.textContent = '$' + info.price.toLocaleString('en', {maximumFractionDigits: info.price < 1 ? 6 : 2});
+        flashPrice(el, info.price, old);
+      });
+      document.querySelectorAll(`[data-change="${sym}"]`).forEach(el => {
+        const sign = info.change_24h >= 0 ? '+' : '';
+        el.innerHTML = `<i class="bi bi-caret-${info.change_24h >= 0 ? 'up' : 'down'}-fill"></i> ${sign}${info.change_24h.toFixed(2)}%`;
+        el.className = `change-badge ${info.change_24h >= 0 ? 'positive' : 'negative'}`;
+      });
+    });
+  }).catch(() => {});
+}, 30000);
+</script>
+{% endblock %}

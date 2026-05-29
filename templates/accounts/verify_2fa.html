@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Verificar 2FA{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center min-vh-100">
+  <div class="auth-card text-center" style="max-width:400px">
+    <div class="mx-auto mb-4" style="width:72px;height:72px;background:rgba(0,102,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center">
+      <i class="bi bi-shield-lock-fill text-primary fs-2"></i>
+    </div>
+    <h4 class="text-white fw-bold mb-2">Verificación 2FA</h4>
+    <p class="text-muted mb-4">Ingresa el código de 6 dígitos de tu aplicación autenticadora</p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-4">
+        <input type="text" name="token" class="form-control nova-input text-center fw-bold"
+               style="font-size:2rem;letter-spacing:0.5rem"
+               maxlength="6" pattern="[0-9]{6}" placeholder="000000"
+               autocomplete="one-time-code" autofocus>
+      </div>
+      <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-primary btn-lg fw-semibold">
+          <i class="bi bi-shield-check me-2"></i>Verificar
+        </button>
+      </div>
+    </form>
+    <p class="text-muted small">
+      ¿Problemas con el código?
+      <a href="{% url 'account_reset_password' %}" class="text-primary">Recuperar acceso</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

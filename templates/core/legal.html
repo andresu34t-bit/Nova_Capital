@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Términos Legales y Privacidad{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-4" style="max-width:860px">
+  <h2 class="section-title mb-2">Términos Legales y Privacidad</h2>
+  <p class="text-muted mb-5">Última actualización: Enero 2024</p>
+
+  <!-- Nav tabs -->
+  <ul class="nav nav-pills market-tabs mb-4">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#terms">Términos de Uso</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#privacy">Privacidad</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#cookies">Cookies</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#regulations">Regulaciones</button></li>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="terms">
+      <div class="nova-card">
+        <div class="nova-card-body">
+          <h5 class="text-white fw-bold mb-3">1. Aceptación de los Términos</h5>
+          <p class="text-muted">Al acceder y utilizar la plataforma Nova Capital Group, usted acepta estar sujeto a estos Términos de Uso. Si no está de acuerdo con alguna parte de estos términos, no podrá acceder al servicio.</p>
+
+          <h5 class="text-white fw-bold mb-3 mt-4">2. Descripción del Servicio</h5>
+          <p class="text-muted">Nova Capital Group es una plataforma de inversión y trading que permite a los usuarios operar con criptomonedas, acciones y divisas. La plataforma proporciona herramientas de análisis, gráficos en tiempo real y gestión de portafolio.</p>
+
+          <h5 class="text-white fw-bold mb-3 mt-4">3. Riesgos de Inversión</h5>
+          <div class="p-3 rounded mb-3" style="background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.2)">
+            <p class="text-warning small mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Advertencia de Riesgo:</strong> Las inversiones en criptomonedas, acciones y forex conllevan un alto nivel de riesgo. Puede perder parte o la totalidad de su inversión. Solo invierta dinero que pueda permitirse perder.</p>
+          </div>
+          <p class="text-muted">Los mercados financieros son volátiles y los precios pueden cambiar rápidamente. El rendimiento pasado no garantiza resultados futuros. Nova Capital Group no proporciona asesoramiento financiero.</p>
+
+          <h5 class="text-white fw-bold mb-3 mt-4">4. Elegibilidad</h5>
+          <p class="text-muted">Para utilizar nuestros servicios debe tener al menos 18 años de edad y residir en un país donde el trading de activos digitales sea legal. Es su responsabilidad cumplir con las leyes locales aplicables.</p>
+
+          <h5 class="text-white fw-bold mb-3 mt-4">5. Cuentas de Usuario</h5>
+          <p class="text-muted">Usted es responsable de mantener la confidencialidad de sus credenciales de acceso. Notifique inmediatamente a Nova Capital Group de cualquier uso no autorizado de su cuenta. No compartimos su información con terceros sin su consentimiento.</p>
+
+          <h5 class="text-white fw-bold mb-3 mt-4">6. Depósitos y Retiros</h5>
+          <p class="text-muted">Los depósitos son procesados en 1-3 días hábiles. Los retiros pueden tardar entre 2-5 días hábiles dependiendo del método seleccionado. Nova Capital Group se reserva el derecho de solicitar documentación de verificación adicional.</p>
+
+          <h5 class="text-white fw-bold mb-3 mt-4">7. Comisiones</h5>
+          <p class="text-muted">Nova Capital Group cobra una comisión del 0.1% por operación de trading y un 0.5% sobre los retiros. Las comisiones pueden variar según el tipo de cuenta y el volumen de operaciones.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="privacy">
+      <div class="nova-card">
+        <div class="nova-card-body">
+          <h5 class="text-white fw-bold mb-3">Política de Privacidad</h5>
+          <p class="text-muted">Nova Capital Group se compromete a proteger su privacidad. Esta política describe cómo recopilamos, usamos y protegemos su información personal.</p>
+
+          <h5 class="text-white fw-bold mb-3 mt-4">Información que Recopilamos</h5>
+          <ul class="text-muted">
+            <li class="mb-2">Información de registro: nombre, email, teléfono, dirección</li>
+            <li class="mb-2">Documentos de verificación de identidad (KYC)</li>
+            <li class="mb-2">Datos de transacciones y actividad de trading</li>
+            <li class="mb-2">Información técnica: dirección IP, tipo de navegador, dispositivo</li>
+          </ul>
+
+          <h5 class="text-white fw-bold mb-3 mt-4">Cómo Usamos su Información</h5>
+          <ul class="text-muted">
+            <li class="mb-2">Procesar transacciones y gestionar su cuenta</li>
+            <li class="mb-2">Cumplir con obligaciones legales y regulatorias (AML/KYC)</li>
+            <li class="mb-2">Mejorar nuestros servicios y experiencia de usuario</li>
+            <li class="mb-2">Enviar notificaciones importantes sobre su cuenta</li>
+          </ul>
+
+          <h5 class="text-white fw-bold mb-3 mt-4">Seguridad de Datos</h5>
+          <p class="text-muted">Utilizamos encriptación AES-256, conexiones SSL/TLS y almacenamiento seguro para proteger sus datos. Realizamos auditorías de seguridad periódicas y seguimos las mejores prácticas de la industria.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="cookies">
+      <div class="nova-card">
+        <div class="nova-card-body">
+          <h5 class="text-white fw-bold mb-3">Política de Cookies</h5>
+          <p class="text-muted">Utilizamos cookies para mejorar su experiencia en nuestra plataforma. Las cookies son pequeños archivos de texto almacenados en su dispositivo.</p>
+
+          <div class="row g-3 mt-2">
+            <div class="col-md-6">
+              <div class="p-3 rounded" style="background:var(--bg-card2);border:1px solid var(--border)">
+                <h6 class="text-white fw-semibold"><i class="bi bi-check-circle text-success me-2"></i>Cookies Esenciales</h6>
+                <p class="text-muted small mb-0">Necesarias para el funcionamiento básico de la plataforma. Incluyen sesión de usuario y seguridad CSRF.</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="p-3 rounded" style="background:var(--bg-card2);border:1px solid var(--border)">
+                <h6 class="text-white fw-semibold"><i class="bi bi-bar-chart text-primary me-2"></i>Cookies Analíticas</h6>
+                <p class="text-muted small mb-0">Nos ayudan a entender cómo los usuarios interactúan con la plataforma para mejorar la experiencia.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="regulations">
+      <div class="nova-card">
+        <div class="nova-card-body">
+          <h5 class="text-white fw-bold mb-3">Marco Regulatorio</h5>
+          <p class="text-muted">Nova Capital Group opera bajo estrictos estándares regulatorios internacionales para garantizar la seguridad y transparencia de todas las operaciones.</p>
+
+          <div class="row g-3 mt-2">
+            <div class="col-md-6">
+              <div class="p-3 rounded" style="background:var(--bg-card2);border:1px solid var(--border)">
+                <h6 class="text-white fw-semibold"><i class="bi bi-shield-fill-check text-success me-2"></i>AML/KYC</h6>
+                <p class="text-muted small mb-0">Cumplimos con las normativas Anti-Lavado de Dinero y Conoce a tu Cliente para prevenir actividades ilícitas.</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="p-3 rounded" style="background:var(--bg-card2);border:1px solid var(--border)">
+                <h6 class="text-white fw-semibold"><i class="bi bi-lock-fill text-primary me-2"></i>GDPR</h6>
+                <p class="text-muted small mb-0">Cumplimos con el Reglamento General de Protección de Datos de la Unión Europea.</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="p-3 rounded" style="background:var(--bg-card2);border:1px solid var(--border)">
+                <h6 class="text-white fw-semibold"><i class="bi bi-bank text-warning me-2"></i>Fondos Segregados</h6>
+                <p class="text-muted small mb-0">Los fondos de los clientes se mantienen separados de los fondos operativos de la empresa.</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="p-3 rounded" style="background:var(--bg-card2);border:1px solid var(--border)">
+                <h6 class="text-white fw-semibold"><i class="bi bi-eye text-info me-2"></i>Transparencia</h6>
+                <p class="text-muted small mb-0">Publicamos informes regulares de auditoría y mantenemos total transparencia en nuestras operaciones.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,522 @@
+{% extends 'base.html' %}
+{% load static asset_tags %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar" id="dashSidebar">
+        <div class="sidebar-header">
+            <div class="user-info">
+                <div class="avatar-placeholder-lg">{{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}</div>
+                <div>
+                    <div class="fw-semibold text-white">{{ request.user.get_full_name|truncatechars:18 }}</div>
+                    <div class="text-muted small">{{ request.user.email|truncatechars:22 }}</div>
+                    <span class="badge mt-1" style="background:{{ request.user.account_level_display.color }}20;color:{{ request.user.account_level_display.color }};border:1px solid {{ request.user.account_level_display.color }}40;font-size:10px">
+                        {{ request.user.account_level_display.icon }} {{ request.user.account_level_display.name }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Principal</div>
+            <a href="{% url 'dashboard:index' %}" class="sidebar-link active">
+                <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+            </a>
+            <a href="{% url 'trading:market' %}" class="sidebar-link">
+                <i class="bi bi-graph-up"></i><span>Mercado</span>
+            </a>
+            <a href="{% url 'trading:portfolio' %}" class="sidebar-link">
+                <i class="bi bi-pie-chart"></i><span>Portafolio</span>
+            </a>
+            <a href="{% url 'trading:trade_history' %}" class="sidebar-link">
+                <i class="bi bi-clock-history"></i><span>Historial</span>
+            </a>
+            <a href="{% url 'trading:watchlist' %}" class="sidebar-link">
+                <i class="bi bi-star"></i><span>Watchlist</span>
+            </a>
+            
+            <div class="nav-section-label mt-3">Finanzas</div>
+            <a href="{% url 'accounts:deposit' %}" class="sidebar-link">
+                <i class="bi bi-plus-circle"></i><span>Depositar</span>
+            </a>
+            <a href="{% url 'accounts:withdraw' %}" class="sidebar-link">
+                <i class="bi bi-dash-circle"></i><span>Retirar</span>
+            </a>
+            <a href="{% url 'accounts:transactions' %}" class="sidebar-link">
+                <i class="bi bi-receipt"></i><span>Transacciones</span>
+            </a>
+            
+            <div class="nav-section-label mt-3">Cuenta</div>
+            <a href="{% url 'accounts:profile' %}" class="sidebar-link">
+                <i class="bi bi-person"></i><span>Perfil</span>
+            </a>
+            <a href="{% url 'accounts:security' %}" class="sidebar-link">
+                <i class="bi bi-shield-check"></i><span>Seguridad</span>
+            </a>
+            <a href="{% url 'trading:news' %}" class="sidebar-link">
+                <i class="bi bi-newspaper"></i><span>Noticias</span>
+            </a>
+        </nav>
+        
+        <!-- Verification banner -->
+        {% if request.user.verification_status != 'verified' %}
+        <div class="sidebar-verify-banner">
+            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+            <div>
+                <div class="small fw-semibold text-white">Verifica tu cuenta</div>
+                <div class="text-muted" style="font-size:11px">Desbloquea todos los límites</div>
+            </div>
+            <a href="{% url 'accounts:profile' %}" class="btn btn-warning btn-sm py-0 px-2" style="font-size:11px">Verificar</a>
+        </div>
+        {% endif %}
+    </aside>
+
+    <!-- Main content -->
+    <div class="dashboard-content">
+        <!-- Top bar -->
+        <div class="dashboard-topbar">
+            <button class="btn btn-icon d-lg-none" id="sidebarToggle">
+                <i class="bi bi-list fs-4 text-white"></i>
+            </button>
+            <div>
+                <h4 class="text-white fw-semibold mb-0">Dashboard</h4>
+                <p class="text-muted small mb-0">Bienvenido, {{ request.user.first_name }}</p>
+            </div>
+            <div class="ms-auto d-flex gap-2">
+                <a href="{% url 'accounts:deposit' %}" class="btn btn-success btn-sm px-3">
+                    <i class="bi bi-plus-lg me-1"></i>Depositar
+                </a>
+                <a href="{% url 'trading:market' %}" class="btn btn-primary btn-sm px-3">
+                    <i class="bi bi-graph-up me-1"></i>Trading
+                </a>
+            </div>
+        </div>
+
+        <div class="p-4">
+            <!-- Balance Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="stat-card">
+                        <div class="stat-card-icon" style="background:linear-gradient(135deg,#0066ff20,#0066ff10)">
+                            <i class="bi bi-wallet2 text-primary"></i>
+                        </div>
+                        <div class="stat-card-body">
+                            <div class="stat-card-label">Saldo Disponible</div>
+                            <div class="stat-card-value">${{ total_balance|floatformat:2 }}</div>
+                            <div class="stat-card-sub text-muted small">USD</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="stat-card">
+                        <div class="stat-card-icon" style="background:linear-gradient(135deg,#28a74520,#28a74510)">
+                            <i class="bi bi-pie-chart text-success"></i>
+                        </div>
+                        <div class="stat-card-body">
+                            <div class="stat-card-label">Valor Portafolio</div>
+                            <div class="stat-card-value">${{ total_portfolio_value|floatformat:2 }}</div>
+                            <div class="stat-card-sub text-muted small">{{ portfolio_items|length }} activos</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="stat-card">
+                        <div class="stat-card-icon" style="background:{% if total_pnl >= 0 %}linear-gradient(135deg,#28a74520,#28a74510){% else %}linear-gradient(135deg,#dc354520,#dc354510){% endif %}">
+                            <i class="bi bi-{% if total_pnl >= 0 %}trending-up text-success{% else %}trending-down text-danger{% endif %}"></i>
+                        </div>
+                        <div class="stat-card-body">
+                            <div class="stat-card-label">Ganancia/Pérdida</div>
+                            <div class="stat-card-value {% if total_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {% if total_pnl >= 0 %}+{% endif %}${{ total_pnl|floatformat:2 }}
+                            </div>
+                            <div class="stat-card-sub {% if total_pnl >= 0 %}text-success{% else %}text-danger{% endif %} small">
+                                {% if total_pnl >= 0 %}+{% endif %}{{ total_pnl_percent|floatformat:2 }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="stat-card">
+                        <div class="stat-card-icon" style="background:linear-gradient(135deg,#ffc10720,#ffc10710)">
+                            <i class="bi bi-activity text-warning"></i>
+                        </div>
+                        <div class="stat-card-body">
+                            <div class="stat-card-label">Operaciones</div>
+                            <div class="stat-card-value">{{ total_trades }}</div>
+                            <div class="stat-card-sub text-muted small">Total ejecutadas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Portfolio Chart -->
+                <div class="col-lg-8">
+                    <div class="nova-card">
+                        <div class="nova-card-header">
+                            <h6 class="text-white fw-semibold mb-0">Rendimiento del Portafolio</h6>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-secondary active" onclick="updateChart('7d',this)">7D</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="updateChart('30d',this)">30D</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="updateChart('90d',this)">90D</button>
+                            </div>
+                        </div>
+                        <div class="nova-card-body">
+                            <canvas id="portfolioChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Portfolio Breakdown -->
+                <div class="col-lg-4">
+                    <div class="nova-card h-100">
+                        <div class="nova-card-header">
+                            <h6 class="text-white fw-semibold mb-0">Distribución</h6>
+                        </div>
+                        <div class="nova-card-body">
+                            {% if portfolio_items %}
+                            <canvas id="donutChart" height="200"></canvas>
+                            <div class="mt-3">
+                                {% for item in portfolio_items %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="asset-dot" style="background:hsl({{ forloop.counter0|add:1 }}00, 70%, 60%)"></div>
+                                        <span class="text-white small">{{ item.asset.symbol }}</span>
+                                    </div>
+                                    <span class="text-muted small">${{ item.current_value|floatformat:2 }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="bi bi-pie-chart fs-1 text-muted opacity-50 d-block mb-2"></i>
+                                <p class="text-muted small">Sin activos en portafolio</p>
+                                <a href="{% url 'trading:market' %}" class="btn btn-primary btn-sm">Comprar ahora</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Trade -->
+                <div class="col-lg-4">
+                    <div class="nova-card">
+                        <div class="nova-card-header">
+                            <h6 class="text-white fw-semibold mb-0">Operación Rápida</h6>
+                        </div>
+                        <div class="nova-card-body">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Activo</label>
+                                <select class="form-select nova-select" id="quickTradeAsset">
+                                    {% for asset in featured_assets %}
+                                    <option value="{{ asset.symbol }}" data-price="{{ asset.current_price }}">
+                                        {{ asset.symbol }} - {{ asset.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Precio actual</label>
+                                <div class="form-control nova-input text-primary fw-semibold" id="quickTradePrice">--</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Cantidad (USD)</label>
+                                <input type="number" class="form-control nova-input" id="quickTradeAmount" placeholder="0.00" min="10" step="0.01">
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-success" onclick="quickTrade('buy')">
+                                    <i class="bi bi-arrow-up-circle me-1"></i>Comprar
+                                </button>
+                                <button class="btn btn-danger" onclick="quickTrade('sell')">
+                                    <i class="bi bi-arrow-down-circle me-1"></i>Vender
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="col-lg-8">
+                    <div class="nova-card">
+                        <div class="nova-card-header">
+                            <h6 class="text-white fw-semibold mb-0">Transacciones Recientes</h6>
+                            <a href="{% url 'accounts:transactions' %}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+                        </div>
+                        <div class="nova-card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table nova-table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Tipo</th>
+                                            <th>Monto</th>
+                                            <th>Estado</th>
+                                            <th>Fecha</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for tx in recent_transactions %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="tx-icon tx-{{ tx.transaction_type }}">
+                                                        <i class="bi bi-{% if tx.transaction_type == 'deposit' %}arrow-down-circle{% elif tx.transaction_type == 'withdrawal' %}arrow-up-circle{% elif tx.transaction_type == 'buy' %}cart-plus{% elif tx.transaction_type == 'sell' %}cash-stack{% else %}circle{% endif %}"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="text-white small fw-medium">{{ tx.get_transaction_type_display }}</div>
+                                                        <div class="text-muted" style="font-size:11px">{{ tx.description|truncatechars:30 }}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="fw-semibold {% if tx.transaction_type in 'deposit,sell,bonus' %}text-success{% else %}text-white{% endif %}">
+                                                {% if tx.transaction_type in 'deposit,sell,bonus' %}+{% else %}-{% endif %}
+                                                ${{ tx.amount|floatformat:2 }}
+                                            </td>
+                                            <td>
+                                                <span class="badge status-{{ tx.status }}">{{ tx.get_status_display }}</span>
+                                            </td>
+                                            <td class="text-muted small">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="4" class="text-center text-muted py-4">Sin transacciones aún</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market News -->
+                <div class="col-lg-4">
+                    <div class="nova-card">
+                        <div class="nova-card-header">
+                            <h6 class="text-white fw-semibold mb-0">Noticias</h6>
+                            <a href="{% url 'trading:news' %}" class="btn btn-sm btn-outline-secondary">Ver más</a>
+                        </div>
+                        <div class="nova-card-body p-0">
+                            {% for article in latest_news %}
+                            <a href="{{ article.source_url }}" target="_blank" class="news-mini-item">
+                                <div class="news-mini-cat">{{ article.get_category_display }}</div>
+                                <div class="news-mini-title">{{ article.title|truncatechars:70 }}</div>
+                                <div class="news-mini-meta">{{ article.source }} · {{ article.published_at|timesince }} ago</div>
+                            </a>
+                            {% empty %}
+                            <div class="text-center text-muted py-4 small">Sin noticias disponibles</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured Assets -->
+                <div class="col-12">
+                    <div class="nova-card">
+                        <div class="nova-card-header">
+                            <h6 class="text-white fw-semibold mb-0">Activos Destacados</h6>
+                            <a href="{% url 'trading:market' %}" class="btn btn-sm btn-outline-secondary">Ver mercado</a>
+                        </div>
+                        <div class="nova-card-body">
+                            <div class="row g-3">
+                                {% for asset in featured_assets %}
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <a href="{% url 'trading:asset_detail' asset.symbol %}" class="asset-mini-card">
+                                        {% asset_icon asset.symbol asset.asset_type 32 %}
+                                        <div class="asset-mini-symbol mt-1">{{ asset.symbol }}</div>
+                                        <div class="asset-mini-price text-white fw-semibold" data-symbol="{{ asset.symbol }}">
+                                            ${{ asset.current_price|floatformat:2 }}
+                                        </div>
+                                        <div class="asset-mini-change {% if asset.is_positive %}text-success{% else %}text-danger{% endif %}" data-change="{{ asset.symbol }}">
+                                            {% if asset.is_positive %}+{% endif %}{{ asset.price_change_percent_24h|floatformat:2 }}%
+                                        </div>
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Portfolio chart
+const portfolioCtx = document.getElementById('portfolioChart');
+if (portfolioCtx) {
+    const labels = [];
+    const data = [];
+    let val = {{ total_balance|default:1000 }} + {{ total_portfolio_value|default:0 }};
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        labels.push(d.toLocaleDateString('es', {weekday:'short', day:'numeric'}));
+        val += (Math.random() - 0.4) * val * 0.05;
+        data.push(Math.max(val, 0));
+    }
+    
+    new Chart(portfolioCtx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Valor Total',
+                data,
+                borderColor: '#0066FF',
+                backgroundColor: 'rgba(0,102,255,0.08)',
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#0066FF',
+                pointBorderColor: '#0a0e1a',
+                pointBorderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1a2035',
+                    borderColor: '#0066ff40',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: ctx => ' $' + ctx.raw.toLocaleString('en', {maximumFractionDigits:2})
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { color: '#ffffff08' }, ticks: { color: '#6c757d' } },
+                y: { grid: { color: '#ffffff08' }, ticks: { color: '#6c757d', callback: v => '$' + v.toLocaleString('en', {maximumFractionDigits:0}) } }
+            }
+        }
+    });
+}
+
+// Donut chart
+const donutCtx = document.getElementById('donutChart');
+{% if portfolio_items %}
+if (donutCtx) {
+    const portfolioData = [
+        {% for item in portfolio_items %}
+        { label: '{{ item.asset.symbol }}', value: {{ item.current_value|default:0 }} },
+        {% endfor %}
+    ];
+    new Chart(donutCtx, {
+        type: 'doughnut',
+        data: {
+            labels: portfolioData.map(d => d.label),
+            datasets: [{
+                data: portfolioData.map(d => d.value),
+                backgroundColor: portfolioData.map((_, i) => `hsl(${(i+1)*60}, 70%, 60%)`),
+                borderColor: '#0a0e1a',
+                borderWidth: 3,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: { label: ctx => ctx.label + ': $' + ctx.raw.toLocaleString('en', {maximumFractionDigits:2}) }
+                }
+            },
+            cutout: '70%',
+        }
+    });
+}
+{% endif %}
+
+// Quick trade
+const quickAsset = document.getElementById('quickTradeAsset');
+const quickPrice = document.getElementById('quickTradePrice');
+
+function updateQuickPrice() {
+    const opt = quickAsset.options[quickAsset.selectedIndex];
+    const price = parseFloat(opt.dataset.price) || 0;
+    quickPrice.textContent = '$' + price.toLocaleString('en', {maximumFractionDigits: price < 1 ? 6 : 2});
+}
+
+if (quickAsset) {
+    quickAsset.addEventListener('change', updateQuickPrice);
+    updateQuickPrice();
+}
+
+function quickTrade(type) {
+    const symbol = quickAsset.value;
+    const amountUsd = parseFloat(document.getElementById('quickTradeAmount').value);
+    const price = parseFloat(quickAsset.options[quickAsset.selectedIndex].dataset.price);
+    
+    if (!amountUsd || amountUsd <= 0) {
+        showToast('Ingresa un monto válido', 'warning');
+        return;
+    }
+    
+    const quantity = amountUsd / price;
+    
+    fetch('/trading/execute/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({ symbol, trade_type: type, quantity: quantity.toFixed(8) })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast(data.error, 'danger');
+        }
+    })
+    .catch(() => showToast('Error de conexión', 'danger'));
+}
+
+function updateChart(period, btn) {
+    document.querySelectorAll('.nova-card-header .btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // In production, fetch real data for the period
+}
+
+// Live price updates
+setInterval(() => {
+    fetch('/api/prices/?type=crypto')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                Object.entries(data.prices).forEach(([symbol, info]) => {
+                    document.querySelectorAll(`[data-symbol="${symbol}"]`).forEach(el => {
+                        const price = info.price;
+                        el.textContent = '$' + price.toLocaleString('en', {maximumFractionDigits: price < 1 ? 6 : 2});
+                    });
+                    document.querySelectorAll(`[data-change="${symbol}"]`).forEach(el => {
+                        const sign = info.change_24h >= 0 ? '+' : '';
+                        el.textContent = sign + info.change_24h.toFixed(2) + '%';
+                        el.className = el.className.replace(/text-success|text-danger/g, '') + (info.change_24h >= 0 ? ' text-success' : ' text-danger');
+                    });
+                });
+                // Update quick trade price
+                if (quickAsset) {
+                    const sym = quickAsset.value;
+                    if (data.prices[sym]) {
+                        quickAsset.options[quickAsset.selectedIndex].dataset.price = data.prices[sym].price;
+                        updateQuickPrice();
+                    }
+                }
+            }
+        }).catch(() => {});
+}, 30000);
+
+// Sidebar toggle
+document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+    document.getElementById('dashSidebar').classList.toggle('open');
+});
+</script>
+{% endblock %}

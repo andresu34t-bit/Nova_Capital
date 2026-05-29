@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load asset_tags %}
+{% block title %}Mi Perfil{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-5 mt-3">
+  <div class="row g-4">
+    <!-- Profile card -->
+    <div class="col-lg-4">
+      <div class="nova-card text-center">
+        <div class="nova-card-body py-4">
+          <div class="mb-3">
+            {% if request.user.profile_picture %}
+            <img src="{{ request.user.profile_picture.url }}" class="rounded-circle" width="90" height="90" alt="Avatar">
+            {% else %}
+            <div class="avatar-placeholder mx-auto" style="width:90px;height:90px;font-size:2rem">
+              {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+            </div>
+            {% endif %}
+          </div>
+          <h5 class="text-white fw-bold mb-1">{{ request.user.get_full_name }}</h5>
+          <p class="text-muted small mb-2">{{ request.user.email }}</p>
+          <span class="badge mb-3" style="background:{{ request.user.account_level_display.color }}20;color:{{ request.user.account_level_display.color }};border:1px solid {{ request.user.account_level_display.color }}40">
+            {{ request.user.account_level_display.icon }} {{ request.user.account_level_display.name }}
+          </span>
+          <div class="row g-2 text-center mt-2">
+            <div class="col-6">
+              <div class="p-2 rounded" style="background:var(--bg-card2)">
+                <div class="text-muted small">Miembro desde</div>
+                <div class="text-white small fw-medium">{{ request.user.created_at|date:"M Y" }}</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-2 rounded" style="background:var(--bg-card2)">
+                <div class="text-muted small">Verificación</div>
+                <div class="small fw-medium {% if request.user.verification_status == 'verified' %}text-success{% else %}text-warning{% endif %}">
+                  {{ request.user.get_verification_status_display }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <a href="{% url 'accounts:edit_profile' %}" class="btn btn-outline-primary w-100 mt-3">
+            <i class="bi bi-pencil me-1"></i>Editar Perfil
+          </a>
+        </div>
+      </div>
+
+      <!-- Wallets -->
+      <div class="nova-card mt-3">
+        <div class="nova-card-header"><h6 class="text-white fw-semibold mb-0">Mis Billeteras</h6></div>
+        <div class="nova-card-body p-0">
+          {% for wallet in wallets %}
+          <div class="d-flex justify-content-between align-items-center p-3 border-bottom" style="border-color:var(--border)!important">
+            <div class="d-flex align-items-center gap-2">
+              {% asset_icon wallet.currency 'crypto' 32 %}
+              <div>
+                <div class="text-white small fw-medium">{{ wallet.currency }}</div>
+                <div class="text-muted" style="font-size:11px">Disponible: {{ wallet.available_balance|floatformat:4 }}</div>
+              </div>
+            </div>
+            <div class="text-white fw-semibold small">{{ wallet.balance|floatformat:4 }}</div>
+          </div>
+          {% empty %}
+          <div class="text-center text-muted py-3 small">Sin billeteras activas</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent transactions -->
+    <div class="col-lg-8">
+      <div class="nova-card">
+        <div class="nova-card-header">
+          <h6 class="text-white fw-semibold mb-0">Transacciones Recientes</h6>
+          <a href="{% url 'accounts:transactions' %}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+        </div>
+        <div class="nova-card-body p-0">
+          <table class="table nova-table mb-0">
+            <thead><tr><th>Tipo</th><th>Monto</th><th>Estado</th><th>Fecha</th></tr></thead>
+            <tbody>
+              {% for tx in recent_transactions %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="tx-icon tx-{{ tx.transaction_type }}">
+                      <i class="bi bi-{% if tx.transaction_type == 'deposit' %}arrow-down-circle{% elif tx.transaction_type == 'withdrawal' %}arrow-up-circle{% else %}circle{% endif %}"></i>
+                    </div>
+                    <span class="text-white small">{{ tx.get_transaction_type_display }}</span>
+                  </div>
+                </td>
+                <td class="fw-semibold text-white">${{ tx.amount|floatformat:2 }}</td>
+                <td><span class="status-{{ tx.status }}">{{ tx.get_status_display }}</span></td>
+                <td class="text-muted small">{{ tx.created_at|date:"d/m/Y" }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="text-center text-muted py-4">Sin transacciones</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

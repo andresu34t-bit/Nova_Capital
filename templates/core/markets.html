@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load asset_tags %}
+{% block title %}Mercados{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-5 mt-3">
+  <div class="text-center mb-5">
+    <h2 class="section-title">Mercados Globales</h2>
+    <p class="text-muted">Explora criptomonedas, acciones y forex en tiempo real</p>
+  </div>
+
+  <ul class="nav nav-pills market-tabs justify-content-center mb-4">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#c1"><i class="bi bi-currency-bitcoin me-1"></i>Crypto</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#s1"><i class="bi bi-building me-1"></i>Acciones</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#f1"><i class="bi bi-currency-exchange me-1"></i>Forex</button></li>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="c1">
+      <div class="nova-table-wrapper">
+        <table class="table nova-table">
+          <thead><tr><th>#</th><th>Activo</th><th>Precio</th><th>24h %</th><th>Vol 24h</th><th>Cap. Mercado</th><th>Acción</th></tr></thead>
+          <tbody>
+            {% for asset in crypto_assets %}
+            <tr>
+              <td class="text-muted">{{ forloop.counter }}</td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  {% asset_icon asset.symbol 'crypto' 34 %}
+                  <div><div class="fw-semibold text-white">{{ asset.symbol }}</div><div class="text-muted small">{{ asset.name }}</div></div>
+                </div>
+              </td>
+              <td class="fw-semibold text-white">${{ asset.current_price|floatformat:2 }}</td>
+              <td><span class="change-badge {% if asset.is_positive %}positive{% else %}negative{% endif %}">{{ asset.price_change_percent_24h|floatformat:2 }}%</span></td>
+              <td class="text-muted">${{ asset.volume_24h|floatformat:0 }}</td>
+              <td class="text-muted">${{ asset.market_cap|floatformat:0 }}</td>
+              <td>
+                {% if user.is_authenticated %}
+                <a href="{% url 'trading:asset_detail' asset.symbol %}" class="btn btn-sm btn-primary">Trade</a>
+                {% else %}
+                <a href="{% url 'account_signup' %}" class="btn btn-sm btn-outline-primary">Registrarse</a>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="text-center text-muted py-4">Sin datos disponibles</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="tab-pane fade" id="s1">
+      <div class="nova-table-wrapper">
+        <table class="table nova-table">
+          <thead><tr><th>#</th><th>Empresa</th><th>Precio</th><th>24h %</th><th>Acción</th></tr></thead>
+          <tbody>
+            {% for asset in stock_assets %}
+            <tr>
+              <td class="text-muted">{{ forloop.counter }}</td>
+              <td><div class="d-flex align-items-center gap-2">{% asset_icon asset.symbol 'stock' 34 %}<div><div class="fw-semibold text-white">{{ asset.symbol }}</div><div class="text-muted small">{{ asset.name }}</div></div></div></td>
+              <td class="fw-semibold text-white">${{ asset.current_price|floatformat:2 }}</td>
+              <td><span class="change-badge {% if asset.is_positive %}positive{% else %}negative{% endif %}">{{ asset.price_change_percent_24h|floatformat:2 }}%</span></td>
+              <td>{% if user.is_authenticated %}<a href="{% url 'trading:asset_detail' asset.symbol %}" class="btn btn-sm btn-primary">Trade</a>{% else %}<a href="{% url 'account_signup' %}" class="btn btn-sm btn-outline-primary">Registrarse</a>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-4">Sin acciones disponibles</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="tab-pane fade" id="f1">
+      <div class="nova-table-wrapper">
+        <table class="table nova-table">
+          <thead><tr><th>#</th><th>Par</th><th>Precio</th><th>24h %</th><th>Acción</th></tr></thead>
+          <tbody>
+            {% for asset in forex_assets %}
+            <tr>
+              <td class="text-muted">{{ forloop.counter }}</td>
+              <td><div class="d-flex align-items-center gap-2">{% asset_icon asset.symbol 'forex' 34 %}<div><div class="fw-semibold text-white">{{ asset.symbol }}</div><div class="text-muted small">{{ asset.name }}</div></div></div></td>
+              <td class="fw-semibold text-white">${{ asset.current_price|floatformat:4 }}</td>
+              <td><span class="change-badge {% if asset.is_positive %}positive{% else %}negative{% endif %}">{{ asset.price_change_percent_24h|floatformat:2 }}%</span></td>
+              <td>{% if user.is_authenticated %}<a href="{% url 'trading:asset_detail' asset.symbol %}" class="btn btn-sm btn-primary">Trade</a>{% else %}<a href="{% url 'account_signup' %}" class="btn btn-sm btn-outline-primary">Registrarse</a>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-4">Sin pares disponibles</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

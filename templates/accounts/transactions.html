@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Historial de Transacciones{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-5 mt-3">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h3 class="text-white fw-bold mb-0">Transacciones</h3>
+      <p class="text-muted small mb-0">Historial completo de movimientos</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'accounts:deposit' %}" class="btn btn-success btn-sm"><i class="bi bi-plus-lg me-1"></i>Depositar</a>
+      <a href="{% url 'accounts:withdraw' %}" class="btn btn-outline-warning btn-sm"><i class="bi bi-dash-lg me-1"></i>Retirar</a>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="nova-card mb-4">
+    <div class="nova-card-body py-2">
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="?" class="btn btn-sm {% if not tx_type %}btn-primary{% else %}btn-outline-secondary{% endif %}">Todos</a>
+        <a href="?type=deposit" class="btn btn-sm {% if tx_type == 'deposit' %}btn-success{% else %}btn-outline-secondary{% endif %}">Depósitos</a>
+        <a href="?type=withdrawal" class="btn btn-sm {% if tx_type == 'withdrawal' %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %}">Retiros</a>
+        <a href="?type=buy" class="btn btn-sm {% if tx_type == 'buy' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Compras</a>
+        <a href="?type=sell" class="btn btn-sm {% if tx_type == 'sell' %}btn-danger{% else %}btn-outline-secondary{% endif %}">Ventas</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="nova-card">
+    <div class="nova-card-body p-0">
+      <div class="table-responsive">
+        <table class="table nova-table mb-0">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Monto</th>
+              <th>Moneda</th>
+              <th>Comisión</th>
+              <th>Referencia</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tx in transactions %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="tx-icon tx-{{ tx.transaction_type }}">
+                    <i class="bi bi-{% if tx.transaction_type == 'deposit' %}arrow-down-circle{% elif tx.transaction_type == 'withdrawal' %}arrow-up-circle{% elif tx.transaction_type == 'buy' %}cart-plus{% elif tx.transaction_type == 'sell' %}cash-stack{% else %}circle{% endif %}"></i>
+                  </div>
+                  <div>
+                    <div class="text-white small fw-medium">{{ tx.get_transaction_type_display }}</div>
+                    <div class="text-muted" style="font-size:11px">{{ tx.description|truncatechars:35 }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="fw-semibold {% if tx.transaction_type in 'deposit,sell,bonus,referral' %}text-success{% else %}text-white{% endif %}">
+                {% if tx.transaction_type in 'deposit,sell,bonus,referral' %}+{% else %}-{% endif %}${{ tx.amount|floatformat:2 }}
+              </td>
+              <td class="text-muted">{{ tx.currency }}</td>
+              <td class="text-muted">${{ tx.fee|floatformat:4 }}</td>
+              <td><code class="text-muted small">{{ tx.reference|default:"--" }}</code></td>
+              <td><span class="status-{{ tx.status }}">{{ tx.get_status_display }}</span></td>
+              <td class="text-muted small">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center py-5">
+                <i class="bi bi-receipt fs-1 text-muted opacity-50 d-block mb-2"></i>
+                <p class="text-muted">Sin transacciones aún</p>
+                <a href="{% url 'accounts:deposit' %}" class="btn btn-primary btn-sm">Hacer primer depósito</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

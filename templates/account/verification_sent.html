@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Verificación Enviada{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-bg"><div class="hero-grid"></div></div>
+  <div class="container d-flex align-items-center justify-content-center min-vh-100">
+    <div class="auth-card text-center">
+      <div class="mx-auto mb-4" style="width:80px;height:80px;background:rgba(0,102,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center">
+        <i class="bi bi-envelope-paper-fill text-primary fs-1"></i>
+      </div>
+      <h4 class="text-white fw-bold mb-2">¡Revisa tu Email!</h4>
+      <p class="text-muted mb-4">Hemos enviado un enlace de verificación a tu correo electrónico. Por favor revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.</p>
+      <div class="p-3 rounded mb-4" style="background:rgba(0,102,255,0.08);border:1px solid rgba(0,102,255,0.2)">
+        <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>Si no ves el email, revisa tu carpeta de spam.</p>
+      </div>
+      <a href="{% url 'account_login' %}" class="btn btn-primary px-5">Ir al Login</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

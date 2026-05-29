@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Nova Capital Group - Plataforma de inversión en criptomonedas, acciones y forex">
+    <meta name="robots" content="noindex, nofollow">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <title>{% block title %}Nova Capital Group{% endblock %} | Nova Capital Group</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% load static %}{% static 'img/favicon_logo.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/logo.png' %}">
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    {% load static %}
+    <link href="{% static 'css/nova.css' %}" rel="stylesheet">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="nova-body">
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg nova-navbar fixed-top" id="mainNavbar">
+    <div class="container-fluid px-4">
+        <!-- Brand -->
+        <a class="navbar-brand nova-brand" href="{% url 'core:home' %}">
+            <img src="{% static 'img/logo.png' %}" alt="Nova Capital Group" class="brand-logo-img">
+            <span class="brand-name-text">Nova <span class="brand-name-accent">Capital</span></span>
+        </a>
+
+        <!-- Mobile toggle -->
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <i class="bi bi-list text-white fs-4"></i>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <!-- Main nav links -->
+            <ul class="navbar-nav me-auto ms-4">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}">
+                        <i class="bi bi-house me-1"></i>Inicio
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'core:markets' %}">
+                        <i class="bi bi-graph-up me-1"></i>Mercados
+                    </a>
+                </li>
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'trading:market' %}">
+                        <i class="bi bi-currency-exchange me-1"></i>Trading
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'trading:portfolio' %}">
+                        <i class="bi bi-pie-chart me-1"></i>Portafolio
+                    </a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'trading:news' %}">
+                        <i class="bi bi-newspaper me-1"></i>Noticias
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Right side -->
+            <div class="d-flex align-items-center gap-3">
+                {% if user.is_authenticated %}
+                <!-- Balance display -->
+                <div class="nav-balance d-none d-lg-flex align-items-center">
+                    <i class="bi bi-wallet2 text-primary me-2"></i>
+                    <span class="text-muted small me-1">Saldo:</span>
+                    <span class="fw-semibold text-white">${{ user_usd_balance|floatformat:2 }}</span>
+                </div>
+                
+                <!-- Notifications -->
+                <div class="dropdown">
+                    <button class="btn btn-icon position-relative" data-bs-toggle="dropdown">
+                        <i class="bi bi-bell text-white fs-5"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:9px">3</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end nova-dropdown" style="width:320px">
+                        <div class="dropdown-header d-flex justify-content-between align-items-center px-3 py-2">
+                            <span class="fw-semibold">Notificaciones</span>
+                            <span class="badge bg-primary">3 nuevas</span>
+                        </div>
+                        <div class="dropdown-divider m-0"></div>
+                        <a class="dropdown-item notification-item" href="#">
+                            <div class="d-flex align-items-start gap-2 py-1">
+                                <div class="notif-icon bg-success-subtle rounded-circle p-2">
+                                    <i class="bi bi-arrow-down-circle text-success"></i>
+                                </div>
+                                <div>
+                                    <div class="small fw-medium">Depósito procesado</div>
+                                    <div class="text-muted" style="font-size:12px">Tu depósito de $1,000 fue aprobado</div>
+                                </div>
+                            </div>
+                        </a>
+                        <a class="dropdown-item notification-item" href="#">
+                            <div class="d-flex align-items-start gap-2 py-1">
+                                <div class="notif-icon bg-primary-subtle rounded-circle p-2">
+                                    <i class="bi bi-graph-up-arrow text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="small fw-medium">BTC subió 5.2%</div>
+                                    <div class="text-muted" style="font-size:12px">Bitcoin alcanzó nuevo máximo</div>
+                                </div>
+                            </div>
+                        </a>
+                        <div class="dropdown-divider m-0"></div>
+                        <a class="dropdown-item text-center small py-2" href="#">Ver todas</a>
+                    </div>
+                </div>
+
+                <!-- User menu -->
+                <div class="dropdown">
+                    <button class="btn btn-icon d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+                        <div class="user-avatar">
+                            {% if user.profile_picture %}
+                                <img src="{{ user.profile_picture.url }}" alt="Avatar" class="rounded-circle" width="34" height="34">
+                            {% else %}
+                                <div class="avatar-placeholder">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="d-none d-lg-block text-start">
+                            <div class="text-white small fw-medium lh-1">{{ user.get_full_name|truncatechars:20 }}</div>
+                            <div class="text-muted" style="font-size:11px">{{ user.get_account_type_display }}</div>
+                        </div>
+                        <i class="bi bi-chevron-down text-muted small"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end nova-dropdown">
+                        <li class="px-3 py-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="user-avatar-lg">
+                                    <div class="avatar-placeholder-lg">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-white">{{ user.get_full_name }}</div>
+                                    <div class="text-muted small">{{ user.email }}</div>
+                                    <span class="badge mt-1" style="background: {{ user.account_level_display.color }}20; color: {{ user.account_level_display.color }}; border: 1px solid {{ user.account_level_display.color }}40">
+                                        {{ user.account_level_display.icon }} {{ user.account_level_display.name }}
+                                    </span>
+                                </div>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'dashboard:index' %}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>Mi Perfil</a></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:deposit' %}"><i class="bi bi-plus-circle me-2 text-success"></i>Depositar</a></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:withdraw' %}"><i class="bi bi-dash-circle me-2 text-warning"></i>Retirar</a></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:transactions' %}"><i class="bi bi-clock-history me-2"></i>Transacciones</a></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:security' %}"><i class="bi bi-shield-check me-2"></i>Seguridad</a></li>
+                        {% if user.is_staff %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-warning" href="/admin/"><i class="bi bi-gear me-2"></i>Admin Panel</a></li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{% url 'account_logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+                {% else %}
+                <a href="{% url 'account_login' %}" class="btn btn-outline-light btn-sm px-3">Iniciar Sesión</a>
+                <a href="{% url 'account_signup' %}" class="btn btn-primary btn-sm px-3">Registrarse</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Messages -->
+{% if messages %}
+<div class="messages-container" style="position:fixed;top:80px;right:20px;z-index:9999;max-width:380px">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-lg border-0" role="alert" style="backdrop-filter:blur(10px)">
+        {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill me-2"></i>
+        {% elif message.tags == 'error' or message.tags == 'danger' %}<i class="bi bi-exclamation-circle-fill me-2"></i>
+        {% elif message.tags == 'warning' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>
+        {% else %}<i class="bi bi-info-circle-fill me-2"></i>{% endif %}
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Main content -->
+<main class="nova-main">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+{% block footer %}
+<footer class="nova-footer mt-5">
+    <div class="container-fluid px-4 py-5">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="nova-brand mb-3">
+                    <img src="{% static 'img/logo.png' %}" alt="Nova Capital Group" class="brand-logo-img">
+                    <span class="brand-name-text">Nova <span class="brand-name-accent">Capital</span></span>
+                </div>
+                <p class="text-muted small">Plataforma líder en inversiones digitales. Trading de criptomonedas, acciones y forex con tecnología de vanguardia.</p>
+                <div class="d-flex gap-2 mt-3">
+                    <a href="#" class="social-link social-x" title="Twitter / X"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" class="social-link social-linkedin" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" class="social-link social-instagram" title="Instagram"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="social-link social-youtube" title="YouTube"><i class="bi bi-youtube"></i></a>
+                    <a href="#" class="social-link social-facebook" title="Facebook"><i class="bi bi-facebook"></i></a>
+                </div>
+                <!-- Trust badges -->
+                <div class="footer-trust-badges mt-4">
+                    <div class="trust-badge"><i class="bi bi-shield-fill-check"></i><span>SSL 256-bit</span></div>
+                    <div class="trust-badge"><i class="bi bi-lock-fill"></i><span>2FA Seguro</span></div>
+                    <div class="trust-badge"><i class="bi bi-patch-check-fill"></i><span>Regulado</span></div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-2">
+                <h6 class="text-white fw-semibold mb-3">Plataforma</h6>
+                <ul class="list-unstyled footer-links">
+                    <li><a href="{% url 'core:markets' %}">Mercados</a></li>
+                    <li><a href="{% url 'trading:news' %}">Noticias</a></li>
+                    <li><a href="{% url 'core:about' %}">Análisis</a></li>
+                    <li><a href="{% url 'core:contact' %}">API</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-lg-2">
+                <h6 class="text-white fw-semibold mb-3">Empresa</h6>
+                <ul class="list-unstyled footer-links">
+                    <li><a href="{% url 'core:about' %}">Sobre Nosotros</a></li>
+                    <li><a href="{% url 'core:contact' %}">Contacto</a></li>
+                    <li><a href="{% url 'core:about' %}">Carreras</a></li>
+                    <li><a href="{% url 'trading:news' %}">Blog</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-lg-2">
+                <h6 class="text-white fw-semibold mb-3">Legal</h6>
+                <ul class="list-unstyled footer-links">
+                    <li><a href="{% url 'core:legal' %}">Términos de Uso</a></li>
+                    <li><a href="{% url 'core:legal' %}">Privacidad</a></li>
+                    <li><a href="{% url 'core:legal' %}">Cookies</a></li>
+                    <li><a href="{% url 'core:legal' %}">Regulaciones</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-lg-2">
+                <h6 class="text-white fw-semibold mb-3">Soporte</h6>
+                <ul class="list-unstyled footer-links">
+                    <li><a href="{% url 'core:faq' %}">Centro de Ayuda</a></li>
+                    <li><a href="{% url 'core:faq' %}">FAQ</a></li>
+                    <li><a href="{% url 'core:contact' %}">Contactar</a></li>
+                    <li><a href="{% url 'core:contact' %}">Chat en Vivo</a></li>
+                </ul>
+            </div>
+        </div>
+        <!-- Payment methods & certifications -->
+        <div class="footer-payments-row mt-4 mb-3">
+            <div class="footer-payments-label">Métodos de pago aceptados:</div>
+            <div class="footer-payment-icons">
+                <span class="payment-badge"><i class="bi bi-credit-card-2-front-fill"></i> Visa</span>
+                <span class="payment-badge"><i class="bi bi-credit-card-fill"></i> Mastercard</span>
+                <span class="payment-badge"><i class="bi bi-bank2"></i> Wire Transfer</span>
+                <span class="payment-badge"><i class="bi bi-currency-bitcoin"></i> Bitcoin</span>
+                <span class="payment-badge"><i class="bi bi-currency-exchange"></i> USDT</span>
+                <span class="payment-badge"><i class="bi bi-paypal"></i> PayPal</span>
+            </div>
+        </div>
+        <hr class="border-secondary mt-2">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <p class="text-muted small mb-0">© 2025 Nova Capital Group. Todos los derechos reservados.</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-shield-fill-check text-success me-1"></i>
+                    Plataforma segura y regulada &nbsp;·&nbsp; Las inversiones conllevan riesgo.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ── Live Chat Widget ─────────────────────────────────────────────── -->
+<div class="livechat-widget" id="liveChatWidget">
+    <!-- Bubble button -->
+    <button class="livechat-bubble" id="liveChatBtn" onclick="toggleLiveChat()" title="Chat en Vivo">
+        <span class="livechat-bubble-icon open-icon"><i class="bi bi-chat-dots-fill"></i></span>
+        <span class="livechat-bubble-icon close-icon d-none"><i class="bi bi-x-lg"></i></span>
+        <span class="livechat-badge">1</span>
+        <span class="livechat-pulse"></span>
+    </button>
+
+    <!-- Chat panel -->
+    <div class="livechat-panel" id="liveChatPanel">
+        <!-- Header -->
+        <div class="livechat-header">
+            <div class="d-flex align-items-center gap-3">
+                <div class="livechat-avatar-wrap">
+                    <img src="{% static 'img/logo.png' %}" alt="Nova Capital" class="livechat-logo">
+                </div>
+                <div>
+                    <div class="livechat-title">Nova Capital Group</div>
+                    <div class="livechat-status"><span class="livechat-dot"></span>Disponible 24/7</div>
+                </div>
+            </div>
+            <button class="livechat-close-btn" onclick="toggleLiveChat()"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <!-- Body -->
+        <div class="livechat-body" id="liveChatBody">
+            <!-- Welcome message -->
+            <div class="livechat-msg agent">
+                <div class="livechat-msg-avatar"><i class="bi bi-robot"></i></div>
+                <div class="livechat-msg-bubble">
+                    <p class="mb-1">¡Hola! 👋 Bienvenido a <strong>Nova Capital Group</strong>.</p>
+                    <p class="mb-0">Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?</p>
+                    <span class="livechat-msg-time">Ahora</span>
+                </div>
+            </div>
+            <!-- Quick options -->
+            <div class="livechat-quick-options">
+                <button class="livechat-quick-btn" onclick="sendQuickMsg(this, '¿Cómo deposito fondos?')">💳 Cómo depositar</button>
+                <button class="livechat-quick-btn" onclick="sendQuickMsg(this, '¿Cómo funciona el trading?')">📈 Cómo hacer trading</button>
+                <button class="livechat-quick-btn" onclick="sendQuickMsg(this, 'Necesito soporte técnico')">🛠 Soporte técnico</button>
+                <button class="livechat-quick-btn" onclick="sendQuickMsg(this, '¿Cuáles son las comisiones?')">💰 Ver comisiones</button>
+            </div>
+        </div>
+
+        <!-- Input -->
+        <div class="livechat-footer">
+            <div class="livechat-input-wrap">
+                <input type="text" id="liveChatInput" class="livechat-input" placeholder="Escribe tu mensaje..." onkeydown="if(event.key==='Enter') sendChatMsg()">
+                <button class="livechat-send-btn" onclick="sendChatMsg()"><i class="bi bi-send-fill"></i></button>
+            </div>
+            <div class="livechat-powered">
+                <i class="bi bi-shield-fill-check text-success"></i> Soporte seguro · Nova Capital Group
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Custom JS -->
+<script src="{% static 'js/nova.js' %}"></script>
+
+<script>
+// ── Live Chat Logic ────────────────────────────────────────────────────
+function toggleLiveChat() {
+    const panel = document.getElementById('liveChatPanel');
+    const openIcon = document.querySelector('.livechat-bubble .open-icon');
+    const closeIcon = document.querySelector('.livechat-bubble .close-icon');
+    const badge = document.querySelector('.livechat-badge');
+    const isOpen = panel.classList.contains('active');
+    if (isOpen) {
+        panel.classList.remove('active');
+        openIcon.classList.remove('d-none');
+        closeIcon.classList.add('d-none');
+    } else {
+        panel.classList.add('active');
+        openIcon.classList.add('d-none');
+        closeIcon.classList.remove('d-none');
+        if (badge) badge.style.display = 'none';
+        scrollChatToBottom();
+    }
+}
+
+const botReplies = [
+    "Entendido. Un agente especializado revisará tu consulta en breve. ⏱️",
+    "Gracias por contactarnos. Nuestro equipo está disponible 24/7 para ayudarte. 🌐",
+    "Perfecto, te conecto con un especialista de Nova Capital Group ahora mismo. 🔗",
+    "He registrado tu consulta. Recibirás una respuesta en menos de 2 minutos. ✅",
+    "Claro, puedo ayudarte con eso. ¿Podrías darnos más detalles? 📋",
+    "Nuestros expertos financieros están revisando tu caso. 📊",
+];
+let replyIdx = 0;
+
+function sendChatMsg() {
+    const input = document.getElementById('liveChatInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+    appendUserMsg(msg);
+    input.value = '';
+    setTimeout(() => appendAgentMsg(botReplies[replyIdx % botReplies.length]), 900);
+    replyIdx++;
+}
+
+function sendQuickMsg(btn, msg) {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    appendUserMsg(msg);
+    const quickReplies = {
+        '¿Cómo deposito fondos?': '💳 Puedes depositar desde tu panel en <strong>Cuenta → Depositar</strong>. Aceptamos transferencia bancaria, tarjeta, crypto y PayPal. El proceso tarda entre 1-24 horas.',
+        '¿Cómo funciona el trading?': '📈 En la sección <strong>Trading</strong> puedes comprar y vender activos en tiempo real. Selecciona el activo, ingresa el monto y confirma la operación.',
+        'Necesito soporte técnico': '🛠 Perfecto, te conecto con nuestro equipo técnico. Por favor describe el problema y te ayudaremos de inmediato.',
+        '¿Cuáles son las comisiones?': '💰 Nuestras comisiones son: Trading 0.1%, Depósito 0%, Retiro 0.5%. Cuentas VIP tienen comisiones reducidas.',
+    };
+    const reply = quickReplies[msg] || botReplies[replyIdx % botReplies.length];
+    setTimeout(() => appendAgentMsg(reply), 800);
+    replyIdx++;
+}
+
+function appendUserMsg(text) {
+    const body = document.getElementById('liveChatBody');
+    const now = new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'});
+    const div = document.createElement('div');
+    div.className = 'livechat-msg user';
+    div.innerHTML = `<div class="livechat-msg-bubble">${text}<span class="livechat-msg-time">${now}</span></div>`;
+    body.appendChild(div);
+    scrollChatToBottom();
+}
+
+function appendAgentMsg(text) {
+    const body = document.getElementById('liveChatBody');
+    const now = new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'});
+    // Typing indicator
+    const typing = document.createElement('div');
+    typing.className = 'livechat-msg agent livechat-typing-wrap';
+    typing.innerHTML = `<div class="livechat-msg-avatar"><i class="bi bi-robot"></i></div><div class="livechat-typing"><span></span><span></span><span></span></div>`;
+    body.appendChild(typing);
+    scrollChatToBottom();
+    setTimeout(() => {
+        body.removeChild(typing);
+        const div = document.createElement('div');
+        div.className = 'livechat-msg agent';
+        div.innerHTML = `<div class="livechat-msg-avatar"><i class="bi bi-robot"></i></div><div class="livechat-msg-bubble">${text}<span class="livechat-msg-time">${now}</span></div>`;
+        body.appendChild(div);
+        scrollChatToBottom();
+    }, 1200);
+}
+
+function scrollChatToBottom() {
+    const body = document.getElementById('liveChatBody');
+    if (body) body.scrollTop = body.scrollHeight;
+}
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

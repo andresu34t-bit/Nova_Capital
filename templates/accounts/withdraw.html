@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Retirar Fondos{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-4" style="max-width:700px">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{% url 'dashboard:index' %}" class="btn btn-icon text-muted"><i class="bi bi-arrow-left fs-5"></i></a>
+    <div>
+      <h3 class="text-white fw-bold mb-0">Retirar Fondos</h3>
+      <p class="text-muted small mb-0">Retira tus ganancias de forma segura</p>
+    </div>
+  </div>
+
+  <!-- Balance card -->
+  <div class="nova-card mb-4" style="background:linear-gradient(135deg,rgba(0,102,255,0.1),rgba(0,212,255,0.05));border-color:rgba(0,102,255,0.2)">
+    <div class="nova-card-body">
+      <div class="row align-items-center">
+        <div class="col">
+          <div class="text-muted small">Saldo Disponible</div>
+          <div class="fs-2 fw-bold text-white">${{ available_balance|floatformat:2 }}</div>
+          <div class="text-muted small">USD · Disponible para retiro</div>
+        </div>
+        <div class="col-auto">
+          <i class="bi bi-wallet2 fs-1 text-primary opacity-50"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nova-card">
+    <div class="nova-card-header">
+      <h6 class="text-white fw-semibold mb-0"><i class="bi bi-arrow-up-circle text-warning me-2"></i>Solicitud de Retiro</h6>
+    </div>
+    <div class="nova-card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Monto a Retirar (USD)</label>
+            {{ form.amount }}
+            {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Tipo de Destino</label>
+            {{ form.destination_type }}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Dirección / Cuenta de Destino</label>
+            {{ form.destination_address }}
+            <div class="text-muted small mt-1">IBAN, dirección crypto, cuenta bancaria o email PayPal</div>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Notas adicionales</label>
+            {{ form.notes }}
+          </div>
+        </div>
+
+        <!-- Fee info -->
+        <div class="mt-4 p-3 rounded" style="background:rgba(255,193,7,0.06);border:1px solid rgba(255,193,7,0.2)">
+          <div class="row g-2 text-center">
+            <div class="col-4">
+              <div class="text-muted small">Mínimo</div>
+              <div class="text-white fw-semibold">${{ min_withdrawal }}</div>
+            </div>
+            <div class="col-4">
+              <div class="text-muted small">Comisión</div>
+              <div class="text-warning fw-semibold">{{ fee_percent }}%</div>
+            </div>
+            <div class="col-4">
+              <div class="text-muted small">Tiempo</div>
+              <div class="text-white fw-semibold">2-5 días</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-grid mt-4">
+          <button type="submit" class="btn btn-warning btn-lg fw-semibold text-dark">
+            <i class="bi bi-arrow-up-circle me-2"></i>Solicitar Retiro
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

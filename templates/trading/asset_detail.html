@@ -1,0 +1,541 @@
+{% extends 'base.html' %}
+{% load static asset_tags %}
+
+{% block title %}{{ asset.symbol }} - {{ asset.name }}{% endblock %}
+
+{% block content %}
+<div class="trading-layout pt-5 mt-3">
+    <div class="container-fluid px-3">
+        <!-- Asset Header -->
+        <div class="trading-header mb-3">
+            <div class="d-flex align-items-center gap-3">
+                <a href="{% url 'trading:market' %}" class="btn btn-icon text-muted">
+                    <i class="bi bi-arrow-left fs-5"></i>
+                </a>
+                <div class="asset-header-info">
+                    <div class="d-flex align-items-center gap-2">
+                        {% asset_icon asset.symbol asset.asset_type 48 %}
+                        <div>
+                            <h4 class="text-white fw-bold mb-0">{{ asset.symbol }}/USD</h4>
+                            <span class="text-muted small">{{ asset.name }} · {{ asset.get_asset_type_display }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="asset-price-display ms-3">
+                    <div class="fs-3 fw-bold text-white" id="livePrice">${{ asset.current_price|floatformat:2 }}</div>
+                    <div class="{% if asset.is_positive %}text-success{% else %}text-danger{% endif %}" id="liveChange">
+                        <i class="bi bi-caret-{% if asset.is_positive %}up{% else %}down{% endif %}-fill"></i>
+                        {% if asset.is_positive %}+{% endif %}{{ asset.price_change_percent_24h|floatformat:2 }}%
+                    </div>
+                </div>
+                <div class="asset-stats d-none d-lg-flex gap-4 ms-4">
+                    <div>
+                        <div class="text-muted small">24h Alto</div>
+                        <div class="text-white fw-medium">${{ asset.high_24h|floatformat:2 }}</div>
+                    </div>
+                    <div>
+                        <div class="text-muted small">24h Bajo</div>
+                        <div class="text-white fw-medium">${{ asset.low_24h|floatformat:2 }}</div>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Volumen 24h</div>
+                        <div class="text-white fw-medium">${{ asset.volume_24h|floatformat:0 }}</div>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Cap. Mercado</div>
+                        <div class="text-white fw-medium">${{ asset.market_cap|floatformat:0 }}</div>
+                    </div>
+                </div>
+                <div class="ms-auto d-flex gap-2">
+                    <button class="btn btn-icon {% if is_in_watchlist %}text-warning{% else %}text-muted{% endif %}" 
+                            onclick="toggleWatchlist('{{ asset.symbol }}')" id="watchlistBtn" title="Watchlist">
+                        <i class="bi bi-star{% if is_in_watchlist %}-fill{% endif %} fs-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <!-- Chart -->
+            <div class="col-lg-8">
+                <div class="nova-card">
+                    <div class="nova-card-header">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-secondary active" onclick="setInterval_('1m',this)">1M</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="setInterval_('5m',this)">5M</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="setInterval_('1h',this)">1H</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="setInterval_('1d',this)">1D</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="setInterval_('1w',this)">1W</button>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-secondary active" onclick="setChartType('candlestick',this)">
+                                <i class="bi bi-bar-chart-steps"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="setChartType('line',this)">
+                                <i class="bi bi-graph-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- TradingView Widget -->
+                    <div class="nova-card-body p-0">
+                        <div id="tradingview_chart" style="height:450px"></div>
+                    </div>
+                </div>
+
+                <!-- Order Book & Trades -->
+                <div class="row g-3 mt-0">
+                    <div class="col-md-6">
+                        <div class="nova-card">
+                            <div class="nova-card-header">
+                                <h6 class="text-white fw-semibold mb-0">Libro de Órdenes</h6>
+                            </div>
+                            <div class="nova-card-body p-0">
+                                <div class="orderbook-header">
+                                    <span class="text-muted small">Precio (USD)</span>
+                                    <span class="text-muted small">Cantidad</span>
+                                    <span class="text-muted small">Total</span>
+                                </div>
+                                <div id="askOrders" class="orderbook-asks"></div>
+                                <div class="orderbook-spread text-center py-2">
+                                    <span class="text-white fw-bold" id="spreadPrice">${{ asset.current_price|floatformat:2 }}</span>
+                                    <span class="text-muted small ms-2">Spread: 0.01%</span>
+                                </div>
+                                <div id="bidOrders" class="orderbook-bids"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="nova-card">
+                            <div class="nova-card-header">
+                                <h6 class="text-white fw-semibold mb-0">Mis Operaciones</h6>
+                            </div>
+                            <div class="nova-card-body p-0">
+                                <table class="table nova-table mb-0 small">
+                                    <thead>
+                                        <tr>
+                                            <th>Tipo</th>
+                                            <th>Cantidad</th>
+                                            <th>Precio</th>
+                                            <th>P&L</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for trade in recent_trades %}
+                                        <tr>
+                                            <td><span class="badge {% if trade.trade_type == 'buy' %}bg-success{% else %}bg-danger{% endif %}">{{ trade.get_trade_type_display }}</span></td>
+                                            <td class="text-white">{{ trade.quantity|floatformat:4 }}</td>
+                                            <td class="text-muted">${{ trade.price|floatformat:2 }}</td>
+                                            <td class="text-muted">--</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="4" class="text-center text-muted py-3">Sin operaciones</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trading Panel -->
+            <div class="col-lg-4">
+                <!-- Position info -->
+                {% if portfolio_item %}
+                <div class="nova-card mb-3">
+                    <div class="nova-card-header">
+                        <h6 class="text-white fw-semibold mb-0">Mi Posición</h6>
+                        <span class="badge bg-primary">Activa</span>
+                    </div>
+                    <div class="nova-card-body">
+                        <div class="row g-2 text-center">
+                            <div class="col-6">
+                                <div class="text-muted small">Cantidad</div>
+                                <div class="text-white fw-semibold">{{ portfolio_item.quantity|floatformat:6 }}</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">Precio Promedio</div>
+                                <div class="text-white fw-semibold">${{ portfolio_item.average_buy_price|floatformat:2 }}</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">Valor Actual</div>
+                                <div class="text-white fw-semibold">${{ portfolio_item.current_value|floatformat:2 }}</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">P&L</div>
+                                <div class="fw-semibold {% if portfolio_item.profit_loss >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {% if portfolio_item.profit_loss >= 0 %}+{% endif %}${{ portfolio_item.profit_loss|floatformat:2 }}
+                                    <span class="small">({% if portfolio_item.profit_loss >= 0 %}+{% endif %}{{ portfolio_item.profit_loss_percent|floatformat:2 }}%)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Trade Form -->
+                <div class="nova-card">
+                    <div class="nova-card-header p-0">
+                        <ul class="nav nav-pills trade-tabs w-100" id="tradeTabs">
+                            <li class="nav-item flex-fill">
+                                <button class="nav-link active w-100 rounded-0" data-bs-toggle="pill" data-bs-target="#buyPanel">
+                                    <i class="bi bi-arrow-up-circle me-1"></i>Comprar
+                                </button>
+                            </li>
+                            <li class="nav-item flex-fill">
+                                <button class="nav-link w-100 rounded-0" data-bs-toggle="pill" data-bs-target="#sellPanel">
+                                    <i class="bi bi-arrow-down-circle me-1"></i>Vender
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="nova-card-body">
+                        <div class="tab-content">
+                            <!-- Buy Panel -->
+                            <div class="tab-pane fade show active" id="buyPanel">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <label class="form-label text-muted small mb-0">Disponible</label>
+                                        <span class="text-white small fw-medium">${{ available_balance|floatformat:2 }} USD</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small">Tipo de Orden</label>
+                                    <select class="form-select nova-select" id="buyOrderType">
+                                        <option value="market">Mercado</option>
+                                        <option value="limit">Límite</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small">Precio (USD)</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control nova-input" id="buyPrice" 
+                                               value="{{ asset.current_price|floatformat:2 }}" readonly>
+                                        <span class="input-group-text nova-input-addon">USD</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small">Cantidad ({{ asset.symbol }})</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control nova-input" id="buyQty" 
+                                               placeholder="0.00000000" step="0.00000001" min="0">
+                                        <span class="input-group-text nova-input-addon">{{ asset.symbol }}</span>
+                                    </div>
+                                </div>
+                                <!-- Quick amount buttons -->
+                                <div class="d-flex gap-2 mb-3">
+                                    <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="setPercent('buy',25)">25%</button>
+                                    <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="setPercent('buy',50)">50%</button>
+                                    <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="setPercent('buy',75)">75%</button>
+                                    <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="setPercent('buy',100)">100%</button>
+                                </div>
+                                <div class="mb-3 p-3 rounded" style="background:#ffffff08">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="text-muted">Total</span>
+                                        <span class="text-white" id="buyTotal">$0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between small">
+                                        <span class="text-muted">Comisión (0.1%)</span>
+                                        <span class="text-muted" id="buyFee">$0.00</span>
+                                    </div>
+                                </div>
+                                <button class="btn btn-success w-100 fw-semibold" onclick="executeTrade('buy')">
+                                    <i class="bi bi-arrow-up-circle me-2"></i>Comprar {{ asset.symbol }}
+                                </button>
+                            </div>
+
+                            <!-- Sell Panel -->
+                            <div class="tab-pane fade" id="sellPanel">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <label class="form-label text-muted small mb-0">Disponible</label>
+                                        <span class="text-white small fw-medium">
+                                            {{ portfolio_item.quantity|default:"0"|floatformat:6 }} {{ asset.symbol }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small">Precio (USD)</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control nova-input" id="sellPrice" 
+                                               value="{{ asset.current_price|floatformat:2 }}" readonly>
+                                        <span class="input-group-text nova-input-addon">USD</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small">Cantidad ({{ asset.symbol }})</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control nova-input" id="sellQty" 
+                                               placeholder="0.00000000" step="0.00000001" min="0">
+                                        <span class="input-group-text nova-input-addon">{{ asset.symbol }}</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2 mb-3">
+                                    <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="setPercent('sell',25)">25%</button>
+                                    <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="setPercent('sell',50)">50%</button>
+                                    <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="setPercent('sell',75)">75%</button>
+                                    <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="setPercent('sell',100)">100%</button>
+                                </div>
+                                <div class="mb-3 p-3 rounded" style="background:#ffffff08">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="text-muted">Recibirás</span>
+                                        <span class="text-white" id="sellTotal">$0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between small">
+                                        <span class="text-muted">Comisión (0.1%)</span>
+                                        <span class="text-muted" id="sellFee">$0.00</span>
+                                    </div>
+                                </div>
+                                <button class="btn btn-danger w-100 fw-semibold" onclick="executeTrade('sell')">
+                                    <i class="bi bi-arrow-down-circle me-2"></i>Vender {{ asset.symbol }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Asset Info -->
+                <div class="nova-card mt-3">
+                    <div class="nova-card-header">
+                        <h6 class="text-white fw-semibold mb-0">Información</h6>
+                    </div>
+                    <div class="nova-card-body">
+                        <p class="text-muted small">{{ asset.description|default:"Activo financiero disponible para trading en Nova Capital Group." }}</p>
+                        <div class="row g-2 text-center">
+                            <div class="col-6">
+                                <div class="info-stat">
+                                    <div class="text-muted small">Tipo</div>
+                                    <div class="text-white small fw-medium">{{ asset.get_asset_type_display }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-stat">
+                                    <div class="text-muted small">Símbolo</div>
+                                    <div class="text-white small fw-medium">{{ asset.symbol }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- TradingView Widget -->
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<script>
+const ASSET_SYMBOL = '{{ asset.symbol }}';
+const ASSET_TYPE = '{{ asset.asset_type }}';
+const CURRENT_PRICE = {{ asset.current_price|default:0 }};
+const AVAILABLE_BALANCE = {{ available_balance|default:0 }};
+const PORTFOLIO_QTY = {{ portfolio_item.quantity|default:0 }};
+
+// TradingView chart
+function getTVSymbol() {
+    if (ASSET_TYPE === 'crypto') return 'BINANCE:' + ASSET_SYMBOL + 'USDT';
+    if (ASSET_TYPE === 'stock') return 'NASDAQ:' + ASSET_SYMBOL;
+    if (ASSET_TYPE === 'forex') return 'FX:' + ASSET_SYMBOL;
+    return ASSET_SYMBOL;
+}
+
+new TradingView.widget({
+    container_id: 'tradingview_chart',
+    symbol: getTVSymbol(),
+    interval: '60',
+    timezone: 'America/New_York',
+    theme: 'dark',
+    style: '1',
+    locale: 'es',
+    toolbar_bg: '#0a0e1a',
+    enable_publishing: false,
+    hide_top_toolbar: false,
+    hide_legend: false,
+    save_image: false,
+    backgroundColor: '#0a0e1a',
+    gridColor: 'rgba(255,255,255,0.04)',
+    width: '100%',
+    height: 450,
+    studies: ['RSI@tv-basicstudies', 'MACD@tv-basicstudies'],
+});
+
+// Order book simulation
+function generateOrderBook() {
+    const price = CURRENT_PRICE;
+    const asks = document.getElementById('askOrders');
+    const bids = document.getElementById('bidOrders');
+    
+    if (!asks || !bids) return;
+    
+    asks.innerHTML = '';
+    bids.innerHTML = '';
+    
+    for (let i = 5; i >= 1; i--) {
+        const p = price * (1 + i * 0.001);
+        const qty = (Math.random() * 2 + 0.1).toFixed(4);
+        const total = (p * qty).toFixed(2);
+        asks.innerHTML += `<div class="orderbook-row ask">
+            <span class="text-danger">${p.toLocaleString('en',{maximumFractionDigits:2})}</span>
+            <span>${qty}</span>
+            <span class="text-muted">${total}</span>
+            <div class="orderbook-bar ask-bar" style="width:${Math.random()*80+10}%"></div>
+        </div>`;
+    }
+    
+    for (let i = 1; i <= 5; i++) {
+        const p = price * (1 - i * 0.001);
+        const qty = (Math.random() * 2 + 0.1).toFixed(4);
+        const total = (p * qty).toFixed(2);
+        bids.innerHTML += `<div class="orderbook-row bid">
+            <span class="text-success">${p.toLocaleString('en',{maximumFractionDigits:2})}</span>
+            <span>${qty}</span>
+            <span class="text-muted">${total}</span>
+            <div class="orderbook-bar bid-bar" style="width:${Math.random()*80+10}%"></div>
+        </div>`;
+    }
+}
+
+generateOrderBook();
+setInterval(generateOrderBook, 5000);
+
+// Trade calculations
+document.getElementById('buyQty')?.addEventListener('input', function() {
+    const qty = parseFloat(this.value) || 0;
+    const price = parseFloat(document.getElementById('buyPrice').value) || CURRENT_PRICE;
+    const total = qty * price;
+    const fee = total * 0.001;
+    document.getElementById('buyTotal').textContent = '$' + (total + fee).toFixed(2);
+    document.getElementById('buyFee').textContent = '$' + fee.toFixed(4);
+});
+
+document.getElementById('sellQty')?.addEventListener('input', function() {
+    const qty = parseFloat(this.value) || 0;
+    const price = parseFloat(document.getElementById('sellPrice').value) || CURRENT_PRICE;
+    const total = qty * price;
+    const fee = total * 0.001;
+    document.getElementById('sellTotal').textContent = '$' + (total - fee).toFixed(2);
+    document.getElementById('sellFee').textContent = '$' + fee.toFixed(4);
+});
+
+function setPercent(type, pct) {
+    if (type === 'buy') {
+        const price = parseFloat(document.getElementById('buyPrice').value) || CURRENT_PRICE;
+        const usdAmount = AVAILABLE_BALANCE * (pct / 100);
+        const qty = usdAmount / price;
+        document.getElementById('buyQty').value = qty.toFixed(8);
+        document.getElementById('buyQty').dispatchEvent(new Event('input'));
+    } else {
+        const qty = PORTFOLIO_QTY * (pct / 100);
+        document.getElementById('sellQty').value = qty.toFixed(8);
+        document.getElementById('sellQty').dispatchEvent(new Event('input'));
+    }
+}
+
+function executeTrade(type) {
+    const qtyEl = document.getElementById(type + 'Qty');
+    const quantity = parseFloat(qtyEl.value);
+    
+    if (!quantity || quantity <= 0) {
+        showToast('Ingresa una cantidad válida', 'warning');
+        return;
+    }
+    
+    const btn = document.querySelector(`#${type}Panel button.btn-${type === 'buy' ? 'success' : 'danger'}`);
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando...';
+    
+    fetch('/trading/execute/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({
+            symbol: ASSET_SYMBOL,
+            trade_type: type,
+            quantity: quantity.toFixed(8),
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast(data.error, 'danger');
+            btn.disabled = false;
+            btn.innerHTML = type === 'buy' ? 
+                `<i class="bi bi-arrow-up-circle me-2"></i>Comprar ${ASSET_SYMBOL}` :
+                `<i class="bi bi-arrow-down-circle me-2"></i>Vender ${ASSET_SYMBOL}`;
+        }
+    })
+    .catch(() => {
+        showToast('Error de conexión', 'danger');
+        btn.disabled = false;
+    });
+}
+
+function toggleWatchlist(symbol) {
+    const formData = new FormData();
+    formData.append('symbol', symbol);
+    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    
+    fetch('/trading/watchlist/toggle/', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            const btn = document.getElementById('watchlistBtn');
+            const icon = btn.querySelector('i');
+            if (data.status === 'added') {
+                icon.className = 'bi bi-star-fill fs-5';
+                btn.className = btn.className.replace('text-muted', 'text-warning');
+                showToast('Añadido a watchlist', 'success');
+            } else {
+                icon.className = 'bi bi-star fs-5';
+                btn.className = btn.className.replace('text-warning', 'text-muted');
+                showToast('Eliminado de watchlist', 'info');
+            }
+        });
+}
+
+function setInterval_(interval, btn) {
+    document.querySelectorAll('.nova-card-header .btn').forEach(b => {
+        if (['1M','5M','1H','1D','1W'].some(t => b.textContent.trim() === t)) b.classList.remove('active');
+    });
+    btn.classList.add('active');
+}
+
+function setChartType(type, btn) {
+    document.querySelectorAll('.nova-card-header .btn').forEach(b => {
+        if (b.querySelector('.bi-bar-chart-steps, .bi-graph-up')) b.classList.remove('active');
+    });
+    btn.classList.add('active');
+}
+
+// Live price update
+setInterval(() => {
+    fetch(`/api/prices/${ASSET_SYMBOL}/`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const priceEl = document.getElementById('livePrice');
+                const changeEl = document.getElementById('liveChange');
+                const spreadEl = document.getElementById('spreadPrice');
+                
+                if (priceEl) priceEl.textContent = '$' + data.price.toLocaleString('en', {maximumFractionDigits:2});
+                if (changeEl) {
+                    const sign = data.change_24h >= 0 ? '+' : '';
+                    changeEl.innerHTML = `<i class="bi bi-caret-${data.change_24h >= 0 ? 'up' : 'down'}-fill"></i> ${sign}${data.change_24h.toFixed(2)}%`;
+                    changeEl.className = data.change_24h >= 0 ? 'text-success' : 'text-danger';
+                }
+                if (spreadEl) spreadEl.textContent = '$' + data.price.toLocaleString('en', {maximumFractionDigits:2});
+                
+                // Update price inputs
+                document.getElementById('buyPrice').value = data.price.toFixed(2);
+                document.getElementById('sellPrice').value = data.price.toFixed(2);
+            }
+        }).catch(() => {});
+}, 15000);
+</script>
+{% endblock %}

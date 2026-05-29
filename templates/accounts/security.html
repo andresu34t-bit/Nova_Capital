@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Seguridad{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-4" style="max-width:800px">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{% url 'dashboard:index' %}" class="btn btn-icon text-muted"><i class="bi bi-arrow-left fs-5"></i></a>
+    <div>
+      <h3 class="text-white fw-bold mb-0">Seguridad de la Cuenta</h3>
+      <p class="text-muted small mb-0">Gestiona la seguridad de tu cuenta</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- 2FA -->
+    <div class="col-12">
+      <div class="nova-card">
+        <div class="nova-card-header">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-shield-lock text-primary fs-5"></i>
+            <h6 class="text-white fw-semibold mb-0">Autenticación de Dos Factores (2FA)</h6>
+          </div>
+          {% if request.user.is_2fa_enabled %}
+          <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle me-1"></i>Activo</span>
+          {% else %}
+          <span class="badge bg-danger-subtle text-danger"><i class="bi bi-x-circle me-1"></i>Inactivo</span>
+          {% endif %}
+        </div>
+        <div class="nova-card-body">
+          <p class="text-muted small">La autenticación de dos factores añade una capa extra de seguridad a tu cuenta. Necesitarás un código de tu app autenticadora cada vez que inicies sesión.</p>
+          {% if request.user.is_2fa_enabled %}
+          <a href="{% url 'accounts:disable_2fa' %}" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-shield-x me-1"></i>Desactivar 2FA
+          </a>
+          {% else %}
+          <a href="{% url 'accounts:setup_2fa' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-shield-check me-1"></i>Activar 2FA
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Password -->
+    <div class="col-md-6">
+      <div class="nova-card h-100">
+        <div class="nova-card-header">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-key text-warning fs-5"></i>
+            <h6 class="text-white fw-semibold mb-0">Contraseña</h6>
+          </div>
+        </div>
+        <div class="nova-card-body">
+          <p class="text-muted small">Cambia tu contraseña regularmente para mantener tu cuenta segura.</p>
+          <a href="{% url 'account_change_password' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-pencil me-1"></i>Cambiar Contraseña
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verification -->
+    <div class="col-md-6">
+      <div class="nova-card h-100">
+        <div class="nova-card-header">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-person-check text-info fs-5"></i>
+            <h6 class="text-white fw-semibold mb-0">Verificación KYC</h6>
+          </div>
+          <span class="badge {% if request.user.verification_status == 'verified' %}bg-success-subtle text-success{% elif request.user.verification_status == 'pending' %}bg-warning-subtle text-warning{% else %}bg-secondary-subtle text-secondary{% endif %}">
+            {{ request.user.get_verification_status_display }}
+          </span>
+        </div>
+        <div class="nova-card-body">
+          <p class="text-muted small">Verifica tu identidad para desbloquear límites más altos de depósito y retiro.</p>
+          {% if request.user.verification_status != 'verified' %}
+          <a href="{% url 'accounts:edit_profile' %}" class="btn btn-info btn-sm text-dark">
+            <i class="bi bi-upload me-1"></i>Verificar Identidad
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Login History -->
+    <div class="col-12">
+      <div class="nova-card">
+        <div class="nova-card-header">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-clock-history text-muted fs-5"></i>
+            <h6 class="text-white fw-semibold mb-0">Historial de Accesos Recientes</h6>
+          </div>
+          <a href="{% url 'accounts:login_history' %}" class="btn btn-sm btn-outline-secondary">Ver todo</a>
+        </div>
+        <div class="nova-card-body p-0">
+          <table class="table nova-table mb-0">
+            <thead>
+              <tr><th>IP</th><th>Dispositivo</th><th>Estado</th><th>Fecha</th></tr>
+            </thead>
+            <tbody>
+              {% for log in login_logs %}
+              <tr>
+                <td class="text-white small">{{ log.ip_address }}</td>
+                <td class="text-muted small">{{ log.user_agent|truncatechars:40 }}</td>
+                <td>
+                  {% if log.success %}
+                  <span class="badge bg-success-subtle text-success">Exitoso</span>
+                  {% else %}
+                  <span class="badge bg-danger-subtle text-danger">Fallido</span>
+                  {% endif %}
+                </td>
+                <td class="text-muted small">{{ log.created_at|date:"d/m/Y H:i" }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="text-center text-muted py-3">Sin historial</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

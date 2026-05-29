@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Configurar 2FA{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-4" style="max-width:500px">
+  <div class="nova-card">
+    <div class="nova-card-header">
+      <h5 class="text-white fw-bold mb-0"><i class="bi bi-shield-lock text-primary me-2"></i>Activar 2FA</h5>
+    </div>
+    <div class="nova-card-body">
+      <div class="text-center mb-4">
+        <p class="text-muted small">Escanea este código QR con tu app autenticadora (Google Authenticator, Authy, etc.)</p>
+        <div class="p-3 bg-white rounded d-inline-block mb-3">
+          <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" width="200" height="200">
+        </div>
+        <div class="p-2 rounded mb-3" style="background:var(--bg-card2);border:1px solid var(--border)">
+          <div class="text-muted small mb-1">Clave manual:</div>
+          <code class="text-primary">{{ secret }}</code>
+        </div>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">Código de verificación (6 dígitos)</label>
+          <input type="text" name="token" class="form-control nova-input text-center fs-4 fw-bold letter-spacing-wide"
+                 maxlength="6" pattern="[0-9]{6}" placeholder="000000" autocomplete="one-time-code" autofocus>
+        </div>
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary btn-lg fw-semibold">
+            <i class="bi bi-shield-check me-2"></i>Verificar y Activar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

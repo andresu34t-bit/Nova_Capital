@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load asset_tags %}
+{% block title %}Historial de Operaciones{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-5 mt-3">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h3 class="text-white fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Historial de Operaciones</h3>
+      <p class="text-muted small mb-0">Todas tus operaciones de trading ejecutadas</p>
+    </div>
+    <a href="{% url 'trading:market' %}" class="btn btn-primary btn-sm px-3">
+      <i class="bi bi-graph-up me-1"></i>Nueva Operación
+    </a>
+  </div>
+
+  <!-- Stats summary cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="th-stat-card">
+        <div class="th-stat-icon" style="background:rgba(0,102,255,0.15);color:#60a5fa">
+          <i class="bi bi-list-check"></i>
+        </div>
+        <div>
+          <div class="th-stat-val">{{ trades|length }}</div>
+          <div class="th-stat-lbl">Total Operaciones</div>
+        </div>
+        <!-- Mini bar chart -->
+        <svg class="th-mini-bars" viewBox="0 0 40 20">
+          <rect x="0" y="12" width="5" height="8" fill="rgba(0,102,255,0.4)" rx="1"/>
+          <rect x="7" y="8" width="5" height="12" fill="rgba(0,102,255,0.5)" rx="1"/>
+          <rect x="14" y="5" width="5" height="15" fill="rgba(0,102,255,0.6)" rx="1"/>
+          <rect x="21" y="9" width="5" height="11" fill="rgba(0,102,255,0.5)" rx="1"/>
+          <rect x="28" y="3" width="5" height="17" fill="rgba(0,102,255,0.8)" rx="1"/>
+          <rect x="35" y="6" width="5" height="14" fill="rgba(0,102,255,0.7)" rx="1"/>
+        </svg>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="th-stat-card">
+        <div class="th-stat-icon" style="background:rgba(34,197,94,0.15);color:#22c55e">
+          <i class="bi bi-arrow-up-circle-fill"></i>
+        </div>
+        <div>
+          <div class="th-stat-val text-success">{{ trades|length }}</div>
+          <div class="th-stat-lbl">Compras ejecutadas</div>
+        </div>
+        <svg class="th-mini-bars" viewBox="0 0 40 20">
+          <rect x="0" y="14" width="5" height="6" fill="rgba(34,197,94,0.3)" rx="1"/>
+          <rect x="7" y="10" width="5" height="10" fill="rgba(34,197,94,0.4)" rx="1"/>
+          <rect x="14" y="6" width="5" height="14" fill="rgba(34,197,94,0.6)" rx="1"/>
+          <rect x="21" y="8" width="5" height="12" fill="rgba(34,197,94,0.5)" rx="1"/>
+          <rect x="28" y="4" width="5" height="16" fill="rgba(34,197,94,0.8)" rx="1"/>
+          <rect x="35" y="7" width="5" height="13" fill="rgba(34,197,94,0.7)" rx="1"/>
+        </svg>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="th-stat-card">
+        <div class="th-stat-icon" style="background:rgba(239,68,68,0.15);color:#ef4444">
+          <i class="bi bi-arrow-down-circle-fill"></i>
+        </div>
+        <div>
+          <div class="th-stat-val text-danger">—</div>
+          <div class="th-stat-lbl">Ventas ejecutadas</div>
+        </div>
+        <svg class="th-mini-bars" viewBox="0 0 40 20">
+          <rect x="0" y="8" width="5" height="12" fill="rgba(239,68,68,0.4)" rx="1"/>
+          <rect x="7" y="12" width="5" height="8" fill="rgba(239,68,68,0.3)" rx="1"/>
+          <rect x="14" y="6" width="5" height="14" fill="rgba(239,68,68,0.5)" rx="1"/>
+          <rect x="21" y="10" width="5" height="10" fill="rgba(239,68,68,0.4)" rx="1"/>
+          <rect x="28" y="5" width="5" height="15" fill="rgba(239,68,68,0.6)" rx="1"/>
+          <rect x="35" y="9" width="5" height="11" fill="rgba(239,68,68,0.4)" rx="1"/>
+        </svg>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="th-stat-card">
+        <div class="th-stat-icon" style="background:rgba(255,193,7,0.15);color:#ffc107">
+          <i class="bi bi-currency-dollar"></i>
+        </div>
+        <div>
+          <div class="th-stat-val text-warning">—</div>
+          <div class="th-stat-lbl">Volumen total</div>
+        </div>
+        <svg class="th-mini-bars" viewBox="0 0 40 20">
+          <rect x="0" y="10" width="5" height="10" fill="rgba(255,193,7,0.3)" rx="1"/>
+          <rect x="7" y="6" width="5" height="14" fill="rgba(255,193,7,0.5)" rx="1"/>
+          <rect x="14" y="3" width="5" height="17" fill="rgba(255,193,7,0.7)" rx="1"/>
+          <rect x="21" y="7" width="5" height="13" fill="rgba(255,193,7,0.5)" rx="1"/>
+          <rect x="28" y="2" width="5" height="18" fill="rgba(255,193,7,0.8)" rx="1"/>
+          <rect x="35" y="5" width="5" height="15" fill="rgba(255,193,7,0.6)" rx="1"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="nova-card mb-3">
+    <div class="nova-card-body py-2">
+      <div class="d-flex gap-2 flex-wrap align-items-center">
+        <span class="text-muted small me-1">Filtrar:</span>
+        <a href="?" class="btn btn-sm btn-primary">Todas</a>
+        <a href="?type=buy" class="btn btn-sm btn-outline-success">Compras</a>
+        <a href="?type=sell" class="btn btn-sm btn-outline-danger">Ventas</a>
+        <a href="?type=filled" class="btn btn-sm btn-outline-secondary">Ejecutadas</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="nova-card">
+    <div class="nova-card-body p-0">
+      <div class="table-responsive">
+        <table class="table nova-table mb-0">
+          <thead>
+            <tr>
+              <th>Activo</th><th>Tipo</th><th>Cantidad</th>
+              <th>Precio</th><th>Total</th><th>Comisión</th>
+              <th>Estado</th><th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for trade in trades %}
+            <tr class="th-row">
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  {% asset_icon trade.asset.symbol trade.asset.asset_type 32 %}
+                  <div>
+                    <div class="text-white small fw-semibold">{{ trade.asset.symbol }}</div>
+                    <div class="text-muted" style="font-size:10px">{{ trade.asset.name|truncatechars:14 }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="th-type-badge {% if trade.trade_type == 'buy' %}th-buy{% else %}th-sell{% endif %}">
+                  <i class="bi bi-arrow-{% if trade.trade_type == 'buy' %}up{% else %}down{% endif %}-circle-fill me-1"></i>
+                  {{ trade.get_trade_type_display }}
+                </span>
+              </td>
+              <td class="text-white fw-medium">{{ trade.quantity|floatformat:6 }}</td>
+              <td class="text-muted">${{ trade.price|floatformat:2 }}</td>
+              <td class="text-white fw-semibold">${{ trade.total_value|floatformat:2 }}</td>
+              <td class="text-muted small">${{ trade.fee|floatformat:4 }}</td>
+              <td>
+                <span class="th-status-badge th-status-{{ trade.status }}">
+                  {% if trade.status == 'filled' %}<i class="bi bi-check-circle-fill me-1"></i>{% endif %}
+                  {{ trade.get_status_display }}
+                </span>
+              </td>
+              <td class="text-muted small">{{ trade.created_at|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-5">
+                <div class="th-empty-state">
+                  <svg viewBox="0 0 120 80" class="th-empty-svg mb-3">
+                    <line x1="10" y1="70" x2="110" y2="70" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                    <line x1="10" y1="50" x2="110" y2="50" stroke="rgba(255,255,255,0.04)" stroke-width="0.5"/>
+                    <line x1="10" y1="30" x2="110" y2="30" stroke="rgba(255,255,255,0.04)" stroke-width="0.5"/>
+                    <!-- Empty candles (outlines only) -->
+                    <rect x="15" y="45" width="10" height="25" fill="none" stroke="rgba(0,102,255,0.2)" stroke-width="1" rx="1"/>
+                    <rect x="32" y="35" width="10" height="35" fill="none" stroke="rgba(0,102,255,0.2)" stroke-width="1" rx="1"/>
+                    <rect x="49" y="40" width="10" height="30" fill="none" stroke="rgba(0,102,255,0.2)" stroke-width="1" rx="1"/>
+                    <rect x="66" y="28" width="10" height="42" fill="none" stroke="rgba(0,102,255,0.2)" stroke-width="1" rx="1"/>
+                    <rect x="83" y="32" width="10" height="38" fill="none" stroke="rgba(0,102,255,0.2)" stroke-width="1" rx="1"/>
+                    <rect x="100" y="25" width="10" height="45" fill="none" stroke="rgba(0,102,255,0.2)" stroke-width="1" rx="1"/>
+                  </svg>
+                  <p class="text-muted mb-3">Sin operaciones registradas aún</p>
+                  <a href="{% url 'trading:market' %}" class="btn btn-primary btn-sm px-4">
+                    <i class="bi bi-graph-up me-1"></i>Ir al Mercado
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% if logo_url %}
+<div class="asset-icon-wrap {{ extra_class }}" style="width:{{ size }}px;height:{{ size }}px">
+  <img src="{{ logo_url }}" alt="{{ symbol }}" class="asset-logo-img"
+       style="width:{{ size }}px;height:{{ size }}px;border-radius:50%;object-fit:cover;"
+       onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="asset-icon-fallback" style="display:none;width:{{ size }}px;height:{{ size }}px">{{ symbol|first }}</div>
+</div>
+{% elif stock_info %}
+<div class="asset-icon-stock {{ extra_class }}"
+     style="width:{{ size }}px;height:{{ size }}px;background:{{ stock_info.bg }};color:{{ stock_info.color }};border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:{{ size|add:'-22' }}px;font-weight:800;font-family:monospace;flex-shrink:0;border:1px solid rgba(255,255,255,0.1);">
+  {{ stock_info.text|slice:":2" }}
+</div>
+{% elif forex_info %}
+<div class="asset-icon-forex {{ extra_class }}"
+     style="width:{{ size }}px;height:{{ size }}px;background:{{ forex_info.color }};border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:{{ size|add:'-18' }}px;flex-shrink:0;border:1px solid rgba(255,255,255,0.15);">
+  {{ forex_info.flag }}
+</div>
+{% else %}
+<div class="asset-icon {{ extra_class }}"
+     style="width:{{ size }}px;height:{{ size }}px;flex-shrink:0;">
+  {{ symbol|first }}
+</div>
+{% endif %}
