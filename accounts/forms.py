@@ -21,21 +21,23 @@ class ProfileForm(forms.ModelForm):
         }
 
 
+DEPOSIT_CURRENCY_CHOICES = [
+    ('USD', '🇺🇸 USD — Dólar Estadounidense'),
+    ('EUR', '🇪🇺 EUR — Euro'),
+    ('GBP', '🇬🇧 GBP — Libra Esterlina'),
+    ('BTC', '₿  BTC — Bitcoin'),
+    ('ETH', 'Ξ  ETH — Ethereum'),
+    ('USDT', '₮  USDT — Tether'),
+    ('BNB', '🔶 BNB — Binance Coin'),
+    ('SOL', '◎  SOL — Solana'),
+    ('ADA', '₳  ADA — Cardano'),
+    ('XRP', '✕  XRP — Ripple'),
+    ('MATIC', '⬡  MATIC — Polygon'),
+    ('DOGE', 'Ð  DOGE — Dogecoin'),
+]
+
+
 class DepositForm(forms.ModelForm):
-    CURRENCY_CHOICES = [
-        ('USD', '🇺🇸 USD — Dólar Estadounidense'),
-        ('EUR', '🇪🇺 EUR — Euro'),
-        ('GBP', '🇬🇧 GBP — Libra Esterlina'),
-        ('BTC', '₿  BTC — Bitcoin'),
-        ('ETH', 'Ξ  ETH — Ethereum'),
-        ('USDT', '₮  USDT — Tether'),
-        ('BNB', '🔶 BNB — Binance Coin'),
-        ('SOL', '◎  SOL — Solana'),
-        ('ADA', '₳  ADA — Cardano'),
-        ('XRP', '✕  XRP — Ripple'),
-        ('MATIC', '⬡  MATIC — Polygon'),
-        ('DOGE', 'Ð  DOGE — Dogecoin'),
-    ]
 
     class Meta:
         model = DepositRequest
@@ -48,7 +50,7 @@ class DepositForm(forms.ModelForm):
                 'step': '0.01',
             }),
             'currency': forms.Select(
-                choices=CURRENCY_CHOICES,
+                choices=DEPOSIT_CURRENCY_CHOICES,
                 attrs={'class': 'form-select form-select-lg'}
             ),
             'payment_method': forms.Select(attrs={'class': 'form-select form-select-lg'}),
