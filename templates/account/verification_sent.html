@@ -2,21 +2,60 @@
 {% block title %}Verificación Enviada{% endblock %}
 {% block footer %}{% endblock %}
 
+{% block extra_css %}
+<style>
+.auth-center-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg-dark); position:relative; overflow:hidden; }
+.auth-center-wrap::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(0,102,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,102,255,0.04) 1px,transparent 1px); background-size:48px 48px; pointer-events:none; }
+.auth-center-glow { position:absolute; top:-150px; left:50%; transform:translateX(-50%); width:600px; height:400px; border-radius:50%; background:radial-gradient(circle,rgba(0,102,255,0.1) 0%,transparent 70%); pointer-events:none; }
+.auth-center-card { position:relative; z-index:1; background:var(--bg-card); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:2.5rem; width:100%; max-width:440px; box-shadow:0 24px 60px rgba(0,0,0,0.5); text-align:center; }
+.email-anim { width:90px; height:90px; border-radius:50%; background:rgba(0,102,255,0.1); border:1px solid rgba(0,102,255,0.2); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; font-size:2.2rem; animation:emailBounce 2s ease-in-out infinite; }
+@keyframes emailBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.step-row { display:flex; flex-direction:column; gap:10px; margin:1.5rem 0; text-align:left; }
+.step-item { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:10px 14px; }
+.step-num { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#0066FF,#0047cc); color:#fff; font-size:0.75rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.step-text { font-size:0.82rem; color:#94a3b8; }
+.btn-auth-primary { width:100%; padding:0.8rem; background:linear-gradient(135deg,#0066FF 0%,#0047cc 100%); border:none; border-radius:12px; color:#fff; font-size:1rem; font-weight:700; box-shadow:0 4px 20px rgba(0,102,255,0.4); transition:all 0.22s ease; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; }
+.btn-auth-primary:hover { background:linear-gradient(135deg,#3385ff 0%,#0066FF 100%); box-shadow:0 8px 28px rgba(0,102,255,0.55); transform:translateY(-2px); color:#fff; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="auth-page">
-  <div class="auth-bg"><div class="hero-grid"></div></div>
-  <div class="container d-flex align-items-center justify-content-center min-vh-100">
-    <div class="auth-card text-center">
-      <div class="mx-auto mb-4" style="width:80px;height:80px;background:rgba(0,102,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center">
-        <i class="bi bi-envelope-paper-fill text-primary fs-1"></i>
-      </div>
-      <h4 class="text-white fw-bold mb-2">¡Revisa tu Email!</h4>
-      <p class="text-muted mb-4">Hemos enviado un enlace de verificación a tu correo electrónico. Por favor revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.</p>
-      <div class="p-3 rounded mb-4" style="background:rgba(0,102,255,0.08);border:1px solid rgba(0,102,255,0.2)">
-        <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>Si no ves el email, revisa tu carpeta de spam.</p>
-      </div>
-      <a href="{% url 'account_login' %}" class="btn btn-primary px-5">Ir al Login</a>
+<div class="auth-center-wrap">
+  <div class="auth-center-glow"></div>
+  <div class="auth-center-card">
+
+    <div class="email-anim">
+      <i class="bi bi-envelope-paper-fill text-primary"></i>
     </div>
+
+    <h4 class="text-white fw-bold mb-2">¡Revisa tu Email!</h4>
+    <p class="text-muted mb-0">Hemos enviado un enlace de verificación a tu correo electrónico.</p>
+
+    <div class="step-row">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <span class="step-text">Abre tu bandeja de entrada</span>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <span class="step-text">Busca el email de Nova Capital Group</span>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <span class="step-text">Haz clic en "Confirmar Email"</span>
+      </div>
+    </div>
+
+    <div class="p-3 rounded mb-4" style="background:rgba(255,193,7,0.06);border:1px solid rgba(255,193,7,0.15)">
+      <p class="text-muted small mb-0">
+        <i class="bi bi-exclamation-triangle text-warning me-1"></i>
+        ¿No ves el email? Revisa tu carpeta de <strong class="text-white">spam</strong>.
+      </p>
+    </div>
+
+    <a href="{% url 'account_login' %}" class="btn-auth-primary">
+      <i class="bi bi-box-arrow-in-right"></i>Ir al Login
+    </a>
   </div>
 </div>
 {% endblock %}
