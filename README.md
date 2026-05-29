@@ -60,3 +60,4 @@ Abre **http://127.0.0.1:8000**
 - Encriptación de sesiones
 - Protección CSRF en todos los formularios
 # Nova_Capital
+# Nova_Capital
