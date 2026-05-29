@@ -1,94 +1,479 @@
 {% extends 'base.html' %}
 {% load asset_tags %}
-{% block title %}Mercados{% endblock %}
+{% block title %}Mercados en Vivo{% endblock %}
+
+{% block extra_css %}
+<style>
+.markets-hero {
+  background: linear-gradient(135deg, rgba(0,102,255,0.08) 0%, rgba(0,212,255,0.04) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 2.5rem 0 2rem;
+}
+.live-dot {
+  width: 8px; height: 8px;
+  background: var(--success);
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse 1.5s infinite;
+  margin-right: 6px;
+}
+.market-tab-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  color: #94a3b8;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.55rem 1.4rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.market-tab-btn.active, .market-tab-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(0,102,255,0.3);
+}
+.price-flash-up   { animation: flashGreen 0.6s ease; }
+.price-flash-down { animation: flashRed 0.6s ease; }
+@keyframes flashGreen {
+  0%,100% { color: inherit; }
+  40%     { color: var(--success); background: rgba(0,200,83,0.12); border-radius: 4px; }
+}
+@keyframes flashRed {
+  0%,100% { color: inherit; }
+  40%     { color: var(--danger); background: rgba(255,61,87,0.12); border-radius: 4px; }
+}
+.last-update {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.skeleton-row td { padding: 0.85rem 1rem; }
+.skeleton-cell {
+  height: 16px;
+  background: linear-gradient(90deg, var(--bg-card2) 25%, var(--bg-card3) 50%, var(--bg-card2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 4px;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.market-summary-bar {
+  display: flex; gap: 1.5rem; flex-wrap: wrap;
+  padding: 0.75rem 1.25rem;
+  background: var(--bg-card2);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+.summary-item { display: flex; align-items: center; gap: 6px; color: #94a3b8; }
+.summary-item strong { color: #fff; }
+.search-box {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 0.875rem;
+  padding: 0.45rem 0.9rem 0.45rem 2.2rem;
+  width: 220px;
+  transition: all 0.2s;
+}
+.search-box:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0,102,255,0.15);
+  width: 260px;
+}
+.search-wrap { position: relative; }
+.search-wrap i { position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%); color: #6b7280; font-size: 0.85rem; }
+.asset-logo {
+  width: 34px; height: 34px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
+}
+.asset-logo-fallback {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.mini-sparkline { display: inline-block; vertical-align: middle; }
+.refresh-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: #94a3b8;
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.refresh-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.refresh-btn.spinning i { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 py-5 mt-3">
-  <div class="text-center mb-5">
-    <h2 class="section-title">Mercados Globales</h2>
-    <p class="text-muted">Explora criptomonedas, acciones y forex en tiempo real</p>
-  </div>
-
-  <ul class="nav nav-pills market-tabs justify-content-center mb-4">
-    <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#c1"><i class="bi bi-currency-bitcoin me-1"></i>Crypto</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#s1"><i class="bi bi-building me-1"></i>Acciones</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#f1"><i class="bi bi-currency-exchange me-1"></i>Forex</button></li>
-  </ul>
-
-  <div class="tab-content">
-    <div class="tab-pane fade show active" id="c1">
-      <div class="nova-table-wrapper">
-        <table class="table nova-table">
-          <thead><tr><th>#</th><th>Activo</th><th>Precio</th><th>24h %</th><th>Vol 24h</th><th>Cap. Mercado</th><th>Acción</th></tr></thead>
-          <tbody>
-            {% for asset in crypto_assets %}
-            <tr>
-              <td class="text-muted">{{ forloop.counter }}</td>
-              <td>
-                <div class="d-flex align-items-center gap-2">
-                  {% asset_icon asset.symbol 'crypto' 34 %}
-                  <div><div class="fw-semibold text-white">{{ asset.symbol }}</div><div class="text-muted small">{{ asset.name }}</div></div>
-                </div>
-              </td>
-              <td class="fw-semibold text-white">${{ asset.current_price|floatformat:2 }}</td>
-              <td><span class="change-badge {% if asset.is_positive %}positive{% else %}negative{% endif %}">{{ asset.price_change_percent_24h|floatformat:2 }}%</span></td>
-              <td class="text-muted">${{ asset.volume_24h|floatformat:0 }}</td>
-              <td class="text-muted">${{ asset.market_cap|floatformat:0 }}</td>
-              <td>
-                {% if user.is_authenticated %}
-                <a href="{% url 'trading:asset_detail' asset.symbol %}" class="btn btn-sm btn-primary">Trade</a>
-                {% else %}
-                <a href="{% url 'account_signup' %}" class="btn btn-sm btn-outline-primary">Registrarse</a>
-                {% endif %}
-              </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="7" class="text-center text-muted py-4">Sin datos disponibles</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
+<!-- Hero -->
+<div class="markets-hero">
+  <div class="container-fluid px-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h2 class="section-title mb-1">
+          <span class="live-dot"></span>Mercados en Vivo
+        </h2>
+        <p class="text-muted mb-0">Precios actualizados en tiempo real</p>
+      </div>
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <div class="search-wrap">
+          <i class="bi bi-search"></i>
+          <input type="text" class="search-box" id="marketSearch" placeholder="Buscar activo...">
+        </div>
+        <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()">
+          <i class="bi bi-arrow-clockwise me-1"></i>Actualizar
+        </button>
+        <span class="last-update" id="lastUpdate">—</span>
       </div>
     </div>
-    <div class="tab-pane fade" id="s1">
-      <div class="nova-table-wrapper">
-        <table class="table nova-table">
-          <thead><tr><th>#</th><th>Empresa</th><th>Precio</th><th>24h %</th><th>Acción</th></tr></thead>
-          <tbody>
-            {% for asset in stock_assets %}
-            <tr>
-              <td class="text-muted">{{ forloop.counter }}</td>
-              <td><div class="d-flex align-items-center gap-2">{% asset_icon asset.symbol 'stock' 34 %}<div><div class="fw-semibold text-white">{{ asset.symbol }}</div><div class="text-muted small">{{ asset.name }}</div></div></div></td>
-              <td class="fw-semibold text-white">${{ asset.current_price|floatformat:2 }}</td>
-              <td><span class="change-badge {% if asset.is_positive %}positive{% else %}negative{% endif %}">{{ asset.price_change_percent_24h|floatformat:2 }}%</span></td>
-              <td>{% if user.is_authenticated %}<a href="{% url 'trading:asset_detail' asset.symbol %}" class="btn btn-sm btn-primary">Trade</a>{% else %}<a href="{% url 'account_signup' %}" class="btn btn-sm btn-outline-primary">Registrarse</a>{% endif %}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5" class="text-center text-muted py-4">Sin acciones disponibles</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div class="tab-pane fade" id="f1">
-      <div class="nova-table-wrapper">
-        <table class="table nova-table">
-          <thead><tr><th>#</th><th>Par</th><th>Precio</th><th>24h %</th><th>Acción</th></tr></thead>
-          <tbody>
-            {% for asset in forex_assets %}
-            <tr>
-              <td class="text-muted">{{ forloop.counter }}</td>
-              <td><div class="d-flex align-items-center gap-2">{% asset_icon asset.symbol 'forex' 34 %}<div><div class="fw-semibold text-white">{{ asset.symbol }}</div><div class="text-muted small">{{ asset.name }}</div></div></div></td>
-              <td class="fw-semibold text-white">${{ asset.current_price|floatformat:4 }}</td>
-              <td><span class="change-badge {% if asset.is_positive %}positive{% else %}negative{% endif %}">{{ asset.price_change_percent_24h|floatformat:2 }}%</span></td>
-              <td>{% if user.is_authenticated %}<a href="{% url 'trading:asset_detail' asset.symbol %}" class="btn btn-sm btn-primary">Trade</a>{% else %}<a href="{% url 'account_signup' %}" class="btn btn-sm btn-outline-primary">Registrarse</a>{% endif %}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5" class="text-center text-muted py-4">Sin pares disponibles</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+
+    <!-- Tabs -->
+    <div class="d-flex gap-2 mt-4">
+      <button class="market-tab-btn active" id="tab-crypto" onclick="switchTab('crypto')">
+        <i class="bi bi-currency-bitcoin me-1"></i>Crypto
+      </button>
+      <button class="market-tab-btn" id="tab-stock" onclick="switchTab('stock')">
+        <i class="bi bi-building me-1"></i>Acciones
+      </button>
+      <button class="market-tab-btn" id="tab-forex" onclick="switchTab('forex')">
+        <i class="bi bi-currency-exchange me-1"></i>Forex
+      </button>
     </div>
   </div>
 </div>
+
+<!-- Market summary bar -->
+<div class="market-summary-bar" id="summaryBar">
+  <div class="summary-item"><i class="bi bi-graph-up text-success"></i> Cargando resumen...</div>
+</div>
+
+<!-- Tables -->
+<div class="container-fluid px-4 py-4">
+
+  <!-- CRYPTO -->
+  <div id="panel-crypto">
+    <div class="nova-table-wrapper">
+      <table class="table nova-table mb-0" id="tbl-crypto">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th>Activo</th>
+            <th>Precio</th>
+            <th>24h %</th>
+            <th class="d-none d-md-table-cell">Vol 24h</th>
+            <th class="d-none d-lg-table-cell">Cap. Mercado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="body-crypto">
+          {% for i in "12345678901234" %}
+          <tr class="skeleton-row">
+            <td><div class="skeleton-cell" style="width:20px"></div></td>
+            <td><div class="d-flex gap-2 align-items-center"><div class="skeleton-cell" style="width:34px;height:34px;border-radius:50%"></div><div><div class="skeleton-cell mb-1" style="width:60px"></div><div class="skeleton-cell" style="width:90px"></div></div></div></td>
+            <td><div class="skeleton-cell" style="width:80px"></div></td>
+            <td><div class="skeleton-cell" style="width:55px"></div></td>
+            <td class="d-none d-md-table-cell"><div class="skeleton-cell" style="width:70px"></div></td>
+            <td class="d-none d-lg-table-cell"><div class="skeleton-cell" style="width:80px"></div></td>
+            <td><div class="skeleton-cell" style="width:60px;height:28px;border-radius:6px"></div></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- STOCKS -->
+  <div id="panel-stock" style="display:none">
+    <div class="nova-table-wrapper">
+      <table class="table nova-table mb-0" id="tbl-stock">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th>Empresa</th>
+            <th>Precio</th>
+            <th>24h %</th>
+            <th class="d-none d-md-table-cell">Vol 24h</th>
+            <th class="d-none d-lg-table-cell">Cap. Mercado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="body-stock">
+          {% for i in "1234567890" %}
+          <tr class="skeleton-row">
+            <td><div class="skeleton-cell" style="width:20px"></div></td>
+            <td><div class="d-flex gap-2 align-items-center"><div class="skeleton-cell" style="width:34px;height:34px;border-radius:50%"></div><div><div class="skeleton-cell mb-1" style="width:60px"></div><div class="skeleton-cell" style="width:90px"></div></div></div></td>
+            <td><div class="skeleton-cell" style="width:80px"></div></td>
+            <td><div class="skeleton-cell" style="width:55px"></div></td>
+            <td class="d-none d-md-table-cell"><div class="skeleton-cell" style="width:70px"></div></td>
+            <td class="d-none d-lg-table-cell"><div class="skeleton-cell" style="width:80px"></div></td>
+            <td><div class="skeleton-cell" style="width:60px;height:28px;border-radius:6px"></div></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FOREX -->
+  <div id="panel-forex" style="display:none">
+    <div class="nova-table-wrapper">
+      <table class="table nova-table mb-0" id="tbl-forex">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th>Par</th>
+            <th>Precio</th>
+            <th>24h %</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="body-forex">
+          {% for i in "12345678" %}
+          <tr class="skeleton-row">
+            <td><div class="skeleton-cell" style="width:20px"></div></td>
+            <td><div class="d-flex gap-2 align-items-center"><div class="skeleton-cell" style="width:34px;height:34px;border-radius:50%"></div><div><div class="skeleton-cell mb-1" style="width:60px"></div><div class="skeleton-cell" style="width:90px"></div></div></div></td>
+            <td><div class="skeleton-cell" style="width:80px"></div></td>
+            <td><div class="skeleton-cell" style="width:55px"></div></td>
+            <td><div class="skeleton-cell" style="width:60px;height:28px;border-radius:6px"></div></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── State ──────────────────────────────────────────────────────────────
+const IS_AUTH = {{ user.is_authenticated|yesno:"true,false" }};
+let currentTab = 'crypto';
+let priceCache  = { crypto: {}, stock: {}, forex: {} };
+let refreshTimer = null;
+const REFRESH_MS = 20000; // 20 seconds
+
+// ── Tab switching ──────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  ['crypto','stock','forex'].forEach(t => {
+    document.getElementById(`panel-${t}`).style.display = t === tab ? '' : 'none';
+    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+  });
+  loadPrices(tab);
+}
+
+// ── Format helpers ─────────────────────────────────────────────────────
+function fmtPrice(price, type) {
+  if (!price) return '—';
+  if (type === 'forex') return parseFloat(price).toFixed(5);
+  if (price >= 1000) return '$' + parseFloat(price).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  if (price >= 1)    return '$' + parseFloat(price).toFixed(2);
+  return '$' + parseFloat(price).toFixed(6);
+}
+
+function fmtVol(v) {
+  if (!v || v === 0) return '—';
+  if (v >= 1e9) return '$' + (v/1e9).toFixed(2) + 'B';
+  if (v >= 1e6) return '$' + (v/1e6).toFixed(2) + 'M';
+  if (v >= 1e3) return '$' + (v/1e3).toFixed(1) + 'K';
+  return '$' + v;
+}
+
+function fmtCap(v) {
+  if (!v || v === 0) return '—';
+  if (v >= 1e12) return '$' + (v/1e12).toFixed(2) + 'T';
+  if (v >= 1e9)  return '$' + (v/1e9).toFixed(2) + 'B';
+  if (v >= 1e6)  return '$' + (v/1e6).toFixed(2) + 'M';
+  return '$' + v;
+}
+
+function changeBadge(ch) {
+  const pos = ch >= 0;
+  const icon = pos ? 'bi-caret-up-fill' : 'bi-caret-down-fill';
+  const cls  = pos ? 'positive' : 'negative';
+  return `<span class="change-badge ${cls}"><i class="bi ${icon}"></i>${Math.abs(ch).toFixed(2)}%</span>`;
+}
+
+function assetIcon(symbol, name) {
+  const initials = symbol.slice(0,3);
+  return `<div class="asset-logo-fallback">${initials}</div>`;
+}
+
+function actionBtn(symbol) {
+  if (IS_AUTH) {
+    return `<a href="/trading/${symbol}/" class="btn btn-sm btn-primary px-3">Trade</a>`;
+  }
+  return `<a href="/accounts/signup/" class="btn btn-sm btn-outline-primary px-3">Entrar</a>`;
+}
+
+// ── Flash animation on price change ───────────────────────────────────
+function flashCell(el, direction) {
+  el.classList.remove('price-flash-up','price-flash-down');
+  void el.offsetWidth; // reflow
+  el.classList.add(direction === 'up' ? 'price-flash-up' : 'price-flash-down');
+}
+
+// ── Render table rows ──────────────────────────────────────────────────
+function renderRows(type, data) {
+  const tbody = document.getElementById(`body-${type}`);
+  const entries = Object.entries(data);
+
+  if (entries.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-5">
+      <i class="bi bi-wifi-off fs-3 d-block mb-2"></i>Sin datos disponibles</td></tr>`;
+    return;
+  }
+
+  const searchVal = document.getElementById('marketSearch').value.toLowerCase();
+
+  entries.forEach(([symbol, d], idx) => {
+    if (searchVal && !symbol.toLowerCase().includes(searchVal) && !d.name.toLowerCase().includes(searchVal)) return;
+
+    const rowId = `row-${type}-${symbol}`;
+    const priceId = `price-${type}-${symbol}`;
+    const existing = document.getElementById(rowId);
+    const oldPrice = priceCache[type][symbol]?.price;
+    const newPrice = d.price;
+    const direction = oldPrice && newPrice > oldPrice ? 'up' : oldPrice && newPrice < oldPrice ? 'down' : null;
+
+    const extraCols = type !== 'forex'
+      ? `<td class="text-muted d-none d-md-table-cell">${fmtVol(d.volume_24h)}</td>
+         <td class="text-muted d-none d-lg-table-cell">${fmtCap(d.market_cap)}</td>`
+      : '';
+
+    const html = `
+      <td class="text-muted small">${idx+1}</td>
+      <td>
+        <div class="d-flex align-items-center gap-2">
+          ${assetIcon(symbol, d.name)}
+          <div>
+            <div class="fw-semibold text-white">${symbol}</div>
+            <div class="text-muted" style="font-size:0.78rem">${d.name || symbol}</div>
+          </div>
+        </div>
+      </td>
+      <td class="fw-semibold text-white" id="${priceId}">${fmtPrice(newPrice, type)}</td>
+      <td>${changeBadge(d.change_24h || 0)}</td>
+      ${extraCols}
+      <td>${actionBtn(symbol)}</td>
+    `;
+
+    if (existing) {
+      existing.innerHTML = html;
+      if (direction) {
+        const priceEl = document.getElementById(priceId);
+        if (priceEl) flashCell(priceEl, direction);
+      }
+    } else {
+      const tr = document.createElement('tr');
+      tr.id = rowId;
+      tr.className = 'asset-row';
+      tr.innerHTML = html;
+      tbody.appendChild(tr);
+    }
+  });
+
+  priceCache[type] = { ...priceCache[type], ...Object.fromEntries(entries) };
+}
+
+// ── Update summary bar ─────────────────────────────────────────────────
+function updateSummary(type, data) {
+  const entries = Object.entries(data);
+  if (!entries.length) return;
+
+  const gainers = entries.filter(([,d]) => d.change_24h > 0).length;
+  const losers  = entries.filter(([,d]) => d.change_24h < 0).length;
+  const avgChange = entries.reduce((s,[,d]) => s + (d.change_24h||0), 0) / entries.length;
+  const topGainer = entries.sort((a,b) => b[1].change_24h - a[1].change_24h)[0];
+  const topLoser  = entries.sort((a,b) => a[1].change_24h - b[1].change_24h)[0];
+
+  document.getElementById('summaryBar').innerHTML = `
+    <div class="summary-item"><i class="bi bi-bar-chart-fill text-primary"></i> <strong>${entries.length}</strong> activos</div>
+    <div class="summary-item"><i class="bi bi-caret-up-fill text-success"></i> <strong class="text-success">${gainers}</strong> en alza</div>
+    <div class="summary-item"><i class="bi bi-caret-down-fill text-danger"></i> <strong class="text-danger">${losers}</strong> en baja</div>
+    <div class="summary-item"><i class="bi bi-graph-up"></i> Promedio: <strong class="${avgChange>=0?'text-success':'text-danger'}">${avgChange>=0?'+':''}${avgChange.toFixed(2)}%</strong></div>
+    ${topGainer ? `<div class="summary-item"><i class="bi bi-trophy-fill text-warning"></i> Top: <strong class="text-success">${topGainer[0]} +${topGainer[1].change_24h.toFixed(2)}%</strong></div>` : ''}
+  `;
+}
+
+// ── Fetch prices from API ──────────────────────────────────────────────
+async function loadPrices(type, silent = false) {
+  if (!silent) {
+    const btn = document.getElementById('refreshBtn');
+    btn.classList.add('spinning');
+  }
+
+  try {
+    const res = await fetch(`/api/prices/?type=${type}`);
+    const json = await res.json();
+
+    if (json.success && json.prices) {
+      // Clear skeleton rows on first load
+      const tbody = document.getElementById(`body-${type}`);
+      if (tbody.querySelector('.skeleton-row')) tbody.innerHTML = '';
+
+      renderRows(type, json.prices);
+      updateSummary(type, json.prices);
+
+      const now = new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+      document.getElementById('lastUpdate').innerHTML =
+        `<i class="bi bi-clock me-1"></i>Actualizado: ${now}`;
+    }
+  } catch(e) {
+    console.error('Error fetching prices:', e);
+    const tbody = document.getElementById(`body-${type}`);
+    if (tbody.querySelector('.skeleton-row')) {
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-5">
+        <i class="bi bi-exclamation-triangle fs-3 d-block mb-2 text-warning"></i>
+        Error al cargar datos. <button class="btn btn-sm btn-outline-primary mt-2" onclick="loadPrices('${type}')">Reintentar</button>
+      </td></tr>`;
+    }
+  } finally {
+    const btn = document.getElementById('refreshBtn');
+    btn.classList.remove('spinning');
+  }
+}
+
+// ── Manual refresh ─────────────────────────────────────────────────────
+function refreshAll() {
+  clearInterval(refreshTimer);
+  loadPrices(currentTab);
+  startAutoRefresh();
+}
+
+// ── Auto-refresh every 20s ─────────────────────────────────────────────
+function startAutoRefresh() {
+  refreshTimer = setInterval(() => {
+    loadPrices(currentTab, true);
+  }, REFRESH_MS);
+}
+
+// ── Search filter ──────────────────────────────────────────────────────
+document.getElementById('marketSearch').addEventListener('input', function() {
+  const val = this.value.toLowerCase();
+  const rows = document.querySelectorAll(`#body-${currentTab} tr.asset-row`);
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.style.display = text.includes(val) ? '' : 'none';
+  });
+});
+
+// ── Init ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadPrices('crypto');
+  startAutoRefresh();
+});
+</script>
 {% endblock %}
