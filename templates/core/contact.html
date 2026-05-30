@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Contacto{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--nova-bg-dark);padding:80px 40px;">
+  <div style="max-width:700px;margin:0 auto;">
+    <a href="/" style="display:flex;align-items:center;gap:10px;margin-bottom:40px;text-decoration:none;">
+      <div style="width:32px;height:32px;background:linear-gradient(135deg,#0066FF,#00D4AA);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;">N</div>
+      <span style="font-size:13px;font-weight:700;color:#fff;">NOVA CAPITAL GROUP</span>
+    </a>
+    <h1 style="font-size:36px;font-weight:800;color:#fff;margin-bottom:8px;">Contáctanos</h1>
+    <p style="color:var(--nova-text-muted);margin-bottom:40px;font-size:15px;">Estamos aquí para ayudarte. Escríbenos y te responderemos en menos de 24 horas.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;">
+      <div class="nova-card" style="text-align:center;padding:24px;">
+        <div style="font-size:32px;margin-bottom:10px;">📧</div>
+        <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px;">Email</div>
+        <div style="font-size:12px;color:var(--nova-primary-light);">soporte@novacapitalgroup.com</div>
+      </div>
+      <div class="nova-card" style="text-align:center;padding:24px;">
+        <div style="font-size:32px;margin-bottom:10px;">💬</div>
+        <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px;">Chat en Vivo</div>
+        <div style="font-size:12px;color:var(--nova-success);">Disponible 24/7</div>
+      </div>
+    </div>
+    <div class="nova-card">
+      <div class="nova-card-title" style="margin-bottom:20px;"><i class="bi bi-envelope-fill me-2"></i>Enviar Mensaje</div>
+      <form>
+        {% csrf_token %}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div class="nova-form-group" style="margin-bottom:0;">
+            <label class="nova-label">Nombre</label>
+            <input type="text" class="nova-input" placeholder="Tu nombre">
+          </div>
+          <div class="nova-form-group" style="margin-bottom:0;">
+            <label class="nova-label">Email</label>
+            <input type="email" class="nova-input" placeholder="tu@email.com">
+          </div>
+        </div>
+        <div class="nova-form-group">
+          <label class="nova-label">Asunto</label>
+          <select class="nova-select">
+            <option>Soporte técnico</option>
+            <option>Consulta sobre cuenta</option>
+            <option>Problema con transacción</option>
+            <option>Información general</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="nova-form-group">
+          <label class="nova-label">Mensaje</label>
+          <textarea class="nova-input" rows="5" placeholder="Describe tu consulta..."></textarea>
+        </div>
+        <button type="submit" class="btn-nova btn-nova-primary" style="padding:12px 28px;font-size:14px;">
+          <i class="bi bi-send-fill"></i> Enviar Mensaje
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

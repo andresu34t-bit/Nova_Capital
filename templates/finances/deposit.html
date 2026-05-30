@@ -29,9 +29,10 @@
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
-        {% for amt in "100,500,1000,5000"|split:"," %}
-        <button type="button" onclick="document.querySelector('[name=amount]').value='{{ amt }}'" class="btn-nova btn-nova-ghost" style="padding:8px;font-size:13px;justify-content:center;">${{ amt }}</button>
-        {% endfor %}
+        <button type="button" onclick="document.querySelector('[name=amount]').value='100'" class="btn-nova btn-nova-ghost" style="padding:8px;font-size:13px;justify-content:center;">$100</button>
+        <button type="button" onclick="document.querySelector('[name=amount]').value='500'" class="btn-nova btn-nova-ghost" style="padding:8px;font-size:13px;justify-content:center;">$500</button>
+        <button type="button" onclick="document.querySelector('[name=amount]').value='1000'" class="btn-nova btn-nova-ghost" style="padding:8px;font-size:13px;justify-content:center;">$1000</button>
+        <button type="button" onclick="document.querySelector('[name=amount]').value='5000'" class="btn-nova btn-nova-ghost" style="padding:8px;font-size:13px;justify-content:center;">$5000</button>
       </div>
       <div class="nova-form-group">
         <label class="nova-label">Método de Pago</label>

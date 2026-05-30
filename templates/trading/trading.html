@@ -163,9 +163,10 @@
 
       <!-- Quick amounts -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
-        {% for pct in "25,50,75,100"|split:"," %}
-        <button onclick="setPercent({{ pct }})" class="btn-nova btn-nova-ghost" style="padding:6px;font-size:11px;justify-content:center;">{{ pct }}%</button>
-        {% endfor %}
+        <button onclick="setPercent(25)" class="btn-nova btn-nova-ghost" style="padding:6px;font-size:11px;justify-content:center;">25%</button>
+        <button onclick="setPercent(50)" class="btn-nova btn-nova-ghost" style="padding:6px;font-size:11px;justify-content:center;">50%</button>
+        <button onclick="setPercent(75)" class="btn-nova btn-nova-ghost" style="padding:6px;font-size:11px;justify-content:center;">75%</button>
+        <button onclick="setPercent(100)" class="btn-nova btn-nova-ghost" style="padding:6px;font-size:11px;justify-content:center;">100%</button>
       </div>
 
       <div style="background:var(--nova-bg-dark);border-radius:var(--nova-radius-sm);padding:12px;font-size:12px;">

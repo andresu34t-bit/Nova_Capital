@@ -111,8 +111,6 @@
         <a href="{% url 'accounts:profile_update' %}" style="font-size:12px;color:var(--nova-primary-light);">Editar →</a>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        {% for label, value in "Nombre,"|add:user.first_name|add:"|Apellido,"|add:user.last_name|add:"|Email,"|add:user.email|add:"|Teléfono,"|add:user.phone|add:"|País,"|add:user.country|add:"|Ciudad,"|add:user.city|split:"|" %}
-        {% endfor %}
         <div>
           <div style="font-size:11px;color:var(--nova-text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Nombre</div>
           <div style="font-size:14px;color:#fff;font-weight:500;">{{ user.first_name|default:"—" }}</div>

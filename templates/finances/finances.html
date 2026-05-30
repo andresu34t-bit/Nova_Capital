@@ -70,9 +70,10 @@
         </select>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px;">
-        {% for amt in "100,500,1000,5000"|split:"," %}
-        <button type="button" onclick="document.querySelector('[name=amount]').value='{{ amt }}'" class="btn-nova btn-nova-ghost" style="padding:6px;font-size:12px;justify-content:center;">${{ amt }}</button>
-        {% endfor %}
+        <button type="button" onclick="document.querySelector('[name=amount]').value='100'" class="btn-nova btn-nova-ghost" style="padding:6px;font-size:12px;justify-content:center;">$100</button>
+        <button type="button" onclick="document.querySelector('[name=amount]').value='500'" class="btn-nova btn-nova-ghost" style="padding:6px;font-size:12px;justify-content:center;">$500</button>
+        <button type="button" onclick="document.querySelector('[name=amount]').value='1000'" class="btn-nova btn-nova-ghost" style="padding:6px;font-size:12px;justify-content:center;">$1000</button>
+        <button type="button" onclick="document.querySelector('[name=amount]').value='5000'" class="btn-nova btn-nova-ghost" style="padding:6px;font-size:12px;justify-content:center;">$5000</button>
       </div>
       <button type="submit" class="btn-nova btn-nova-success w-100" style="padding:12px;font-size:14px;justify-content:center;">
         <i class="bi bi-plus-circle-fill"></i> Confirmar Depósito

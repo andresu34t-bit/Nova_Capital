@@ -17,8 +17,6 @@
 
 <!-- TABS -->
 <div style="display:flex;gap:4px;background:var(--nova-bg-card);border:1px solid var(--nova-border);border-radius:var(--nova-radius-sm);padding:4px;margin-bottom:20px;width:fit-content;">
-  {% for tab_id, tab_label, tab_icon in "crypto,Criptomonedas,₿|stocks,Acciones,📈|forex,Forex,💱|indices,Índices,📊"|split:"|" %}
-  {% endfor %}
   <button onclick="switchTab('crypto')" id="tab-crypto" class="order-tab {% if active_tab == 'crypto' %}active buy{% endif %}" style="padding:8px 20px;font-size:13px;">₿ Criptomonedas</button>
   <button onclick="switchTab('stocks')" id="tab-stocks" class="order-tab {% if active_tab == 'stocks' %}active buy{% endif %}" style="padding:8px 20px;font-size:13px;">📈 Acciones</button>
   <button onclick="switchTab('forex')" id="tab-forex" class="order-tab {% if active_tab == 'forex' %}active buy{% endif %}" style="padding:8px 20px;font-size:13px;">💱 Forex</button>

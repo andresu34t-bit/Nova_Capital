@@ -18,10 +18,19 @@ def home_view(request):
     top_stocks = Asset.objects.filter(asset_type='stock', is_active=True).order_by('rank')[:6]
     latest_news = NewsArticle.objects.order_by('-published_at')[:3]
     
+    # Demo assets shown when DB is empty (no split filter needed)
+    demo_assets = [
+        ('BTC', 'Bitcoin',  '67,500', '▲ +2.45%', 'var(--nova-success)'),
+        ('ETH', 'Ethereum', '3,850',  '▲ +1.82%', 'var(--nova-success)'),
+        ('BNB', 'BNB',      '605',    '▼ -0.54%', 'var(--nova-danger)'),
+        ('SOL', 'Solana',   '185',    '▲ +3.21%', 'var(--nova-success)'),
+    ]
+    
     context = {
         'top_crypto': top_crypto,
         'top_stocks': top_stocks,
         'latest_news': latest_news,
+        'demo_assets': demo_assets,
     }
     return render(request, 'core/home.html', context)
 
